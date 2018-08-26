@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<head><title>test invoice</title></head>
+<body>
+	<section id="header">header message</section>
+	<main>
+	<div class="main">
+	<script type="text/javascript">
+    	alert("test")
+	</script>
+                           <!-- Message List -->
+                           <div class="block block-themed">
+                               <div class="block-header bg-primary-dark">
+                                   <ul class="block-options">
+                                       <li>
+                                           <button type="button" data-toggle="block-option" data-action="fullscreen_toggle"></button>
+                                       </li>
+                                       <li>
+                                           <button type="button" data-toggle="block-option" data-action="content_toggle"></button>
+                                       </li>
+                                   </ul>
+                                   <div class="block-title text-normal">
+                                       <strong>我的账单</strong>
+                                   </div>
+                               </div>
+                               <div class="block-content">
+                                   <!-- Messages Options -->
+                                   <div class="push">
+                                   <div class="table-container">
+
+
+    <table id="tableInvoicesList" class="table table-list hidden">
+        <thead>
+            <tr>
+                <th>账单 #</th>
+                <th class="hidden-xs hidden-sm">账单日期</th>
+                <th class="hidden-xs hidden-sm">过期日期</th>
+                <th>总计</th>
+                <th>状态</th>
+                <th class="responsive-edit-button" style="display: none;"></th>
+            </tr>
+        </thead>
+        <tbody>
+                            <tr onclick="clickableSafeRedirect(event, 'test1', false)">
+                    <td>12345</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-04-10</span>10/04/2018</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-04-11</span>11/04/2018</td>
+                    <td data-order="10">¥10.00RMB</td>
+                    <td><span class="label status status-unpaid"><span class="textred">未付款</span></span></td>
+                    <td class="responsive-edit-button" style="display: none;">
+                        <a href="test1" class="btn btn-block btn-info">
+                            管理产品
+                        </a>
+                    </td>
+                </tr>
+                            <tr onclick="clickableSafeRedirect(event, 'test2', false)">
+                    <td>2345</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-04-30</span>30/04/2018</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-04-30</span>30/04/2018</td>
+                    <td data-order="10">¥10.00RMB</td>
+                    <td><span class="label status status-paid"><span class="textgreen">已付款</span></span></td>
+                    <td class="responsive-edit-button" style="display: none;">
+                        <a href="test2" class="btn btn-block btn-info">
+                            管理产品
+                        </a>
+                    </td>
+                </tr>
+                            <tr onclick="clickableSafeRedirect(event, 'test3', false)">
+                    <td>345</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-05-28</span>28/05/2018</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-05-29</span>29/05/2018</td>
+                    <td data-order="10">¥10.00RMB</td>
+                    <td><span class="label status status-paid"><span class="textgreen">已付款</span></span></td>
+                    <td class="responsive-edit-button" style="display: none;">
+                        <a href="test3" class="btn btn-block btn-info">
+                            管理产品
+                        </a>
+                    </td>
+                </tr>
+                            <tr onclick="clickableSafeRedirect(event, 'test4', false)">
+                    <td>4390</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-06-28</span>28/06/2018</td>
+                    <td class="hidden-xs hidden-sm"><span class="hidden">2018-06-29</span>29/06/2018</td>
+                    <td data-order="10">¥10.00RMB</td>
+                    <td><span class="label status status-paid"><span class="textgreen">已付款</span></span></td>
+                    <td class="responsive-edit-button" style="display: none;">
+                        <a href="test4" class="btn btn-block btn-info">
+                            管理产品
+                        </a>
+                    </td>
+                </tr>
+                    </tbody>
+    </table>
+    <div class="text-center" id="tableLoading">
+        <p><i class="fa fa-spinner fa-spin"></i> 加载中...</p>
+    </div>
+    </div>
+	</div>
+</div>
+</div>
+</div>
+    </main>
+    <section id="footer">footer message</section>
+</body>
+</html>
