@@ -17,7 +17,7 @@ type UsedPanel struct {
 	widgets.QWidget
 
 	// 数据更新时触发的信号，更新展示的数据
-	_ func(parser.SSRInfo) `signal:"dataRefresh,auto"`
+	_ func(*parser.SSRInfo) `signal:"dataRefresh,auto"`
 
 	usedBar     *ProgressBar
 	uploadBar   *ProgressBar
@@ -94,14 +94,13 @@ func (u *UsedPanel) setLabels(info *parser.SSRInfo) {
 }
 
 // dataRefresh 刷新数据显示
-// 通过传值避免多次刷新造成干扰
-func (u *UsedPanel) dataRefresh(info parser.SSRInfo) {
+func (u *UsedPanel) dataRefresh(info *parser.SSRInfo) {
 	u.total = convertToKb(info.TotalData)
 	u.used = convertToKb(info.UsedData)
 	u.upload = convertToKb(info.Upload)
 	u.download = convertToKb(info.Download)
 
-	u.setLabels(&info)
+	u.setLabels(info)
 	// 更新progressbar
 	u.usedBar.SetMaximum(u.total)
 	u.usedBar.SetMark(computeRatio(u.total))

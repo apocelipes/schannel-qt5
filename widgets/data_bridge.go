@@ -20,8 +20,8 @@ type UserDataBridge interface {
 	sync.Locker
 	// ServiceInfos 获取服务信息
 	ServiceInfos() []*parser.Service
-	// SSRInfos 获取ssr使用和节点信息
-	SSRInfos() []*parser.SSRInfo
+	// SSRInfos 根据service信息获取ssr使用和节点信息
+	SSRInfos(ser *parser.Service) *parser.SSRInfo
 	// Invoices 获取账单信息
 	Invoices() []*parser.Invoice
 }
@@ -54,7 +54,7 @@ func NewDataBridge(cookies []*http.Cookie, proxy string, logger *log.Logger) Use
 }
 
 // checkCacheExpired 检查缓存是否过期，如果过期就更新
-// 虽然非并发安全，但是不出口，只能由公开接口调用，调用公开接口前加锁则不会发生数据竞争
+// 虽然非并发安全，但是不公开，只能由公开接口调用，调用公开接口前加锁则不会发生数据竞争
 func (a *accountDataProxy) checkCacheExpired() {
 	if time.Now().Sub(a.cached) < 20*time.Minute {
 		return
@@ -67,7 +67,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 	}
 
 	servicesList := parser.GetService(servicesHTML)
-	tmp := make([]*parser.SSRInfo, 0)
+	tmp := make([]*parser.SSRInfo, 0, len(servicesList))
 	for _, ser := range servicesList {
 		infoHTML, err := crawler.GetSSRInfoHTML(ser, a.cookies, a.proxy)
 		if err != nil {
@@ -91,8 +91,10 @@ func (a *accountDataProxy) checkCacheExpired() {
 }
 
 // ServiceInfo 获取服务信息
-// 非并发安全，调用前需要先加锁
+// 并发安全，因为只会修改slice而不会修改其中item的具体数据
 func (a *accountDataProxy) ServiceInfos() []*parser.Service {
+	a.Lock()
+	defer a.Unlock()
 	a.checkCacheExpired()
 
 	sers := make([]*parser.Service, 0, len(a.ssrInfos))
@@ -103,18 +105,31 @@ func (a *accountDataProxy) ServiceInfos() []*parser.Service {
 	return sers
 }
 
-// SSRInfos 返回ssr服务和节点信息
-// 非并发安全，调用前需要先加锁
-func (a *accountDataProxy) SSRInfos() []*parser.SSRInfo {
+// SSRInfos 根据给出的Service返回ssr服务和节点信息
+// 并发安全，因为只有slice会被修改，其中的item不会被修改，因此没有数据竞争
+func (a *accountDataProxy) SSRInfos(ser *parser.Service) *parser.SSRInfo {
+	a.Lock()
+	defer a.Unlock()
 	a.checkCacheExpired()
 
-	return a.ssrInfos
+	for _, v := range a.ssrInfos {
+		if *v.Service == *ser {
+			return v
+		}
+	}
+
+	return nil
 }
 
 // Invoices 返回所有账单信息
-// 非并发安全，调用前需要先加锁
+// 并发安全
 func (a *accountDataProxy) Invoices() []*parser.Invoice {
+	a.Lock()
+	defer a.Unlock()
 	a.checkCacheExpired()
 
-	return a.invoices
+	tmp := make([]*parser.Invoice, len(a.invoices))
+	copy(tmp, a.invoices)
+
+	return tmp
 }

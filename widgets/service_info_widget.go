@@ -30,7 +30,7 @@ type ServiceInfoWidget struct {
   port *widgets.QLabel
   passwd *widgets.QLabel
   // 使用量信息
-  // TODO: 自定义组件，继承QProcessorBar
+  panel *UsedPanel
   // 是否需要付款
   // TODO: 自定义组件，根据invoice来判断是否要付款，付款红字提示
 }
