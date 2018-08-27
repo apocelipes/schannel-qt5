@@ -23,7 +23,7 @@ type ProgressBar struct {
 // 设置颜色变换标志位数值为mark
 func NewProgressBarWithMark(max, current, mark int) *ProgressBar {
 	p := NewProgressBar(nil)
-	p.highMark = mark
+	p.SetMark(mark)
 	p.SetRange(0, max)
 	p.ConnectValueChanged(p.setColor)
 	p.SetValue(current)
@@ -39,4 +39,9 @@ func (p *ProgressBar) setColor(newValue int) {
 		return
 	}
 	p.SetStyleSheet(Green)
+}
+
+// SetMark 更改highmark
+func (p *ProgressBar) SetMark(mark int) {
+	p.highMark = mark
 }
