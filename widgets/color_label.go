@@ -35,44 +35,54 @@ var (
 type ColorLabel struct {
 	widgets.QLabel
 
-	_ func(string) `slot:"setText,auto"`
-
 	defaultColor string
 }
 
 // NewColorLabelWithColor 生成colorlabel，设置default color为color
-func NewColorLabelWithColor(color, text string) *ColorLabel {
+// color为空则设置为黑色
+func NewColorLabelWithColor(text, color string) *ColorLabel {
 	l := NewColorLabel(nil, 0)
-	c, ok := colors[color]
-	if !ok {
-		if color == "" {
-			c = "black"
-		}
 
+	if err := l.SetDefaultColor(color); err != nil {
 		return nil
 	}
-
-	l.defaultColor = c
-	l.SetText(text)
+	l.SetDefaultColorText(text)
 
 	return l
 }
 
+// getColor 从colors中获取对应的color并返回
+func getColor(color string) string {
+	c, ok := colors[color]
+	if !ok {
+		c = "none"
+	}
+
+	return c
+}
+
 // SetDefaultColor 设置defaultColor
+// color为""时设置为黑色
 // 不会改变现有text内容的颜色
 // 颜色不存在时返回error
 func (l *ColorLabel) SetDefaultColor(color string) error {
-	c, ok := colors[color]
-	if !ok {
+	if color == "" {
+		l.defaultColor = "black"
+		return nil
+	}
+
+	c := getColor(color)
+	if c == "none" {
 		return errors.New("color does not support")
 	}
-	l.defaultColor = c
+	l.defaultColor = color
 
 	return nil
 }
 
 // ChangeColor 改变现有text的颜色
 // 并且设置defaultColor为新的颜色
+// color为""时设置为黑色
 // 颜色不存在时返回error
 func (l *ColorLabel) ChangeColor(color string) error {
 	if err := l.SetDefaultColor(color); err != nil {
@@ -83,7 +93,7 @@ func (l *ColorLabel) ChangeColor(color string) error {
 	if err != nil {
 		return err
 	}
-	l.SetText(text)
+	l.SetDefaultColorText(text)
 
 	return nil
 }
@@ -101,21 +111,22 @@ func (l *ColorLabel) PureText() (string, error) {
 }
 
 // SetColorText 用color显示新的text
-func (l *ColorLabel) SetColorText(color, text string) {
+// color为""时显示黑色
+func (l *ColorLabel) SetColorText(text, color string) {
 	if color == "" || l.defaultColor == "black" {
-		l.SetTextDefault(text)
+		l.SetText(text)
 	}
 
-	c, ok := colors[color]
-	if !ok {
+	c := getColor(color)
+	if c == "none" {
 		return
 	}
 
 	newText := fmt.Sprintf(c, text)
-	l.SetTextDefault(newText)
+	l.SetText(newText)
 }
 
-// setText 设置新的text值，并使其显示创建时指定的default color
-func (l *ColorLabel) setText(text string) {
-	l.SetColorText(l.defaultColor, text)
+// SetDefaultColorText 设置新的text值，并使其显示创建时指定的default color
+func (l *ColorLabel) SetDefaultColorText(text string) {
+	l.SetColorText(text, l.defaultColor)
 }
