@@ -29,3 +29,25 @@ type Invoice struct {
 	// 付款状态
 	State PaymentState
 }
+
+// GetStatus 返回账单的状态
+// 未付款会返回false
+// time.Now()超过ExpireDate将视为账单过期
+func (i *Invoice) GetStatus() (string, bool) {
+	msg := ""
+	flag := false
+
+	if i.State == NeedPay {
+		msg += "需要付款"
+	} else if i.State == FinishedPay {
+		msg += "无需付款"
+		flag = true
+	}
+
+	current := time.Now().Round(24 * time.Hour)
+	if current.After(i.ExpireDate) {
+		msg += "，账单过期"
+	}
+
+	return msg, flag
+}

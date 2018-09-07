@@ -3,6 +3,7 @@ package widgets
 import (
 	"regexp"
 	"strconv"
+	"time"
 )
 
 const (
@@ -47,4 +48,9 @@ func convertToKb(data string) int {
 func computeRatio(total int) int {
 	res := float64(total) * HighRatio
 	return int(res)
+}
+
+// time2string 将日期转换为2006-01-02的格式
+func time2string(t time.Time) string {
+	return t.Format("2006-01-02")
 }
