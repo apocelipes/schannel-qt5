@@ -12,6 +12,8 @@ type Launcher interface {
 	Restart() error
 	// Stop 关闭客户端
 	Stop() error
+	// ConnectionCheck 检查ssr代理是否可用
+	ConnectionCheck() bool
 }
 
 // LauncherMaker 生成Launcher的工厂函数
