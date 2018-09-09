@@ -1,8 +1,10 @@
 package pyclient
 
 import (
-	"os"
+	"net/http"
+	"net/url"
 	"os/exec"
+	"time"
 
 	"schannel-qt5/config"
 	"schannel-qt5/ssr"
@@ -42,25 +44,47 @@ func NewPySSRClient(c *config.UserConfig) ssr.Launcher {
 
 // Start 启动客户端
 func (p *PySSRClient) Start() error {
-	// env tells sudo to find commands in $PATH
-	cmd := exec.Command("sudo", "env PATH=$PATH", "python", p.bin, p.binArg, "-d", "start")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// 使用pkexec在gui程序中请求权限
+	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "start")
 	return cmd.Run()
 }
 
 // Restart 重新启动客户端
 func (p *PySSRClient) Restart() error {
-	cmd := exec.Command("sudo", "env PATH=$PATH", "python", p.bin, p.binArg, "-d", "restart")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "restart")
 	return cmd.Run()
 }
 
 // Stop 停止客户端
 func (p *PySSRClient) Stop() error {
-	cmd := exec.Command("sudo", "env PATH=$PATH", "python", p.bin, p.binArg, "-d", "stop")
-	cmd.Stderr = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "stop")
 	return cmd.Run()
+}
+
+func (p *PySSRClient) ConnectionCheck(timeout time.Duration) bool {
+	proxyURL, err := url.Parse("socks5://127.0.0.1:1080")
+	if err != nil {
+		return false
+	}
+
+	client := &http.Client{
+		Timeout: timeout,
+	}
+	client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+
+	request, err := http.NewRequest("GET", "https://www.google.com.hk", nil)
+	if err != nil {
+		return false
+	}
+	resp, err := client.Do(request)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return false
+	}
+
+	return true
 }
