@@ -30,6 +30,8 @@ var (
 		"gray":   gray,
 	}
 	textMatcher = regexp.MustCompile(`<font color=".+">(.+)</font>`)
+	// 找不到对应颜色
+	ErrColorNotFound = errors.New("cannot found text")
 )
 
 type ColorLabel struct {
@@ -73,7 +75,7 @@ func (l *ColorLabel) SetDefaultColor(color string) error {
 
 	c := getColor(color)
 	if c == "none" {
-		return errors.New("color does not support")
+		return ErrColorNotFound
 	}
 	l.defaultColor = color
 
@@ -104,7 +106,7 @@ func (l *ColorLabel) PureText() (string, error) {
 	text := l.Text()
 	tmp := textMatcher.FindStringSubmatch(text)
 	if len(tmp) < 2 {
-		return "", errors.New("cannot found text")
+		return "", ErrColorNotFound
 	}
 
 	return tmp[1], nil
@@ -112,21 +114,32 @@ func (l *ColorLabel) PureText() (string, error) {
 
 // SetColorText 用color显示新的text
 // color为""时显示黑色
-func (l *ColorLabel) SetColorText(text, color string) {
-	if color == "" || l.defaultColor == "black" {
+func (l *ColorLabel) SetColorText(text, color string) error {
+	if color == "black" {
 		l.SetText(text)
+		return nil
+	} else if color == "" {
+		if l.defaultColor != "" {
+			// 递归调用，下次调用时color不可能是空，所以一定可以设置颜色
+			// 不在这里直接使用SetDefaultColorText，避免调用链不清晰
+			return l.SetColorText(text, l.defaultColor)
+		}
+
+		return errors.New("no default color set")
 	}
 
 	c := getColor(color)
 	if c == "none" {
-		return
+		return ErrColorNotFound
 	}
 
 	newText := fmt.Sprintf(c, text)
 	l.SetText(newText)
+
+	return nil
 }
 
 // SetDefaultColorText 设置新的text值，并使其显示创建时指定的default color
-func (l *ColorLabel) SetDefaultColorText(text string) {
-	l.SetColorText(text, l.defaultColor)
+func (l *ColorLabel) SetDefaultColorText(text string) error {
+	return l.SetColorText(text, l.defaultColor)
 }

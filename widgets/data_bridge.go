@@ -24,6 +24,8 @@ type UserDataBridge interface {
 	SSRInfos(ser *parser.Service) *parser.SSRInfo
 	// Invoices 获取账单信息
 	Invoices() []*parser.Invoice
+	// GetLogger 获取logger
+	GetLogger() *log.Logger
 }
 
 // accountDataProxy 用于获取和缓存用户数据的代理类
@@ -132,4 +134,9 @@ func (a *accountDataProxy) Invoices() []*parser.Invoice {
 	copy(tmp, a.invoices)
 
 	return tmp
+}
+
+// GetLogger 获取共享logger
+func (a *accountDataProxy) GetLogger() *log.Logger {
+	return a.logger
 }
