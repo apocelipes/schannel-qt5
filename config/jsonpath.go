@@ -13,6 +13,7 @@ type JSONPath struct {
 
 func (jp *JSONPath) UnmarshalJSON(b []byte) error {
 	data := string(b)
+	// 对于字符串的json值，需要手动去除双引号
 	data = strings.TrimSuffix(data, "\"")
 	data = strings.TrimPrefix(data, "\"")
 	if !strings.HasPrefix(data, "~") && !path.IsAbs(data) {

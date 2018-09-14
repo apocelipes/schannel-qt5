@@ -30,7 +30,7 @@ func genClientWithProxy(proxy string) (*http.Client, error) {
 	}
 	client.Jar = jar
 
-	if proxy == "" {
+	if proxy != "" {
 		proxyURL, err := url.Parse(proxy)
 		if err != nil {
 			return nil, err

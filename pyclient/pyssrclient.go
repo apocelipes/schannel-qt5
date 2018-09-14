@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"os/exec"
+	"schannel-qt5/urls"
 	"time"
 
 	"schannel-qt5/config"
@@ -73,7 +74,7 @@ func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
 	}
 	client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 
-	request, err := http.NewRequest("GET", "https://www.google.com.hk", nil)
+	request, err := http.NewRequest("GET", urls.RootPath, nil)
 	if err != nil {
 		return err
 	}

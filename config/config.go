@@ -23,7 +23,7 @@ var (
 type UserConfig struct {
 	UserName string `json:"user_name"`
 	Passwd   string `json:"user_password"`
-	Proxy    string `json:"proxy_url"`
+	Proxy    JSONProxy `json:"proxy_url"`
 	// ssr config
 	SSRConfigPath JSONPath `json:"ssr_config_path"`
 	// ssr client bin path

@@ -92,7 +92,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 		l.conf.StoreConfig()
 	}
 	// 登录
-	cookies, err := crawler.GetAuth(user, passwd, l.conf.Proxy)
+	cookies, err := crawler.GetAuth(user, passwd, l.conf.Proxy.String())
 	if err != nil {
 		l.LoginFailed()
 		return
