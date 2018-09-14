@@ -19,7 +19,7 @@ type LoginWidget struct {
 
 	username    *widgets.QLineEdit
 	password    *widgets.QLineEdit
-	loginStatus *widgets.QLabel
+	loginStatus *ColorLabel
 	remember    *widgets.QCheckBox
 	conf        *config.UserConfig
 }
@@ -54,8 +54,7 @@ func (l *LoginWidget) init() {
 	passwdInputLayout.AddWidget(passwdLabel, 0, 0)
 	passwdInputLayout.AddWidget(l.password, 0, 0)
 
-	l.loginStatus = widgets.NewQLabel2("用户名或密码错误，请重试", nil, 0)
-	l.loginStatus.SetStyleSheet("color:red;")
+	l.loginStatus = NewColorLabelWithColor("用户名或密码错误，请重试", "red")
 	l.loginStatus.Hide()
 
 	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)

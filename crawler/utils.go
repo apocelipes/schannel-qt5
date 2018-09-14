@@ -28,14 +28,16 @@ func genClientWithProxy(proxy string) (*http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	client.Jar = jar
-	proxyURL, err := url.Parse(proxy)
-	if err != nil {
-		return nil, err
+
+	if proxy == "" {
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			return nil, err
+		}
+		// 设置proxy
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 	}
-	// 设置proxy
-	client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 
 	return client, nil
 }
