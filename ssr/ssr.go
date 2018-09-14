@@ -14,7 +14,7 @@ type Launcher interface {
 	// Stop 关闭客户端
 	Stop() error
 	// ConnectionCheck 检查ssr代理是否可用
-	ConnectionCheck(timeout time.Duration) bool
+	ConnectionCheck(timeout time.Duration) error
 }
 
 // LauncherMaker 生成Launcher的工厂函数

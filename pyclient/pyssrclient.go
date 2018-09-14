@@ -61,10 +61,11 @@ func (p *PySSRClient) Stop() error {
 	return cmd.Run()
 }
 
-func (p *PySSRClient) ConnectionCheck(timeout time.Duration) bool {
+// ConnectionCheck 检查代理是否可用，不可用则返回error
+func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
 	proxyURL, err := url.Parse("socks5://127.0.0.1:1080")
 	if err != nil {
-		return false
+		return err
 	}
 
 	client := &http.Client{
@@ -74,17 +75,17 @@ func (p *PySSRClient) ConnectionCheck(timeout time.Duration) bool {
 
 	request, err := http.NewRequest("GET", "https://www.google.com.hk", nil)
 	if err != nil {
-		return false
+		return err
 	}
 	resp, err := client.Do(request)
 	if err != nil {
-		return false
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
