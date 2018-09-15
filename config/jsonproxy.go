@@ -34,7 +34,8 @@ func (p *JSONProxy) UnmarshalJSON(b []byte) error {
 	data = strings.TrimPrefix(data, "\"")
 	p.string = data
 
-	if !p.IsURL() {
+	// 允许""表示不使用proxy
+	if !p.IsURL() && p.string != "" {
 		return ErrNotURL
 	}
 
@@ -42,7 +43,7 @@ func (p *JSONProxy) UnmarshalJSON(b []byte) error {
 }
 
 func (p *JSONProxy) MarshalJSON() ([]byte, error) {
-	if !p.IsURL() {
+	if !p.IsURL() && p.string != "" {
 		return nil, ErrNotURL
 	}
 
