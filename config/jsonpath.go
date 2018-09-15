@@ -8,7 +8,7 @@ import (
 
 // JSONPath unmarshal/marshal时验证路径是否为绝对路径
 type JSONPath struct {
-	string
+	Data string
 }
 
 func (jp *JSONPath) UnmarshalJSON(b []byte) error {
@@ -20,29 +20,29 @@ func (jp *JSONPath) UnmarshalJSON(b []byte) error {
 		return ErrNotAbs
 	}
 
-	jp.string = data
+	jp.Data = data
 	return nil
 }
 
 func (jp JSONPath) String() string {
-	return jp.string
+	return jp.Data
 }
 
 func (jp *JSONPath) MarshalJSON() ([]byte, error) {
-	if !strings.HasPrefix(jp.string, "~") && !path.IsAbs(jp.string) {
+	if !strings.HasPrefix(jp.Data, "~") && !path.IsAbs(jp.Data) {
 		return nil, ErrNotAbs
 	}
 
-	return []byte("\"" + jp.string + "\""), nil
+	return []byte("\"" + jp.Data + "\""), nil
 }
 
 // AbsPath 返回对应的绝对路径
 func (jp *JSONPath) AbsPath() (string, error) {
-	if path.IsAbs(jp.string) {
-		return jp.string, nil
+	if path.IsAbs(jp.Data) {
+		return jp.Data, nil
 	}
 
-	if !strings.HasPrefix(jp.string, "~") {
+	if !strings.HasPrefix(jp.Data, "~") {
 		return "", ErrNotAbs
 	}
 
@@ -51,5 +51,5 @@ func (jp *JSONPath) AbsPath() (string, error) {
 		return "", ErrHOME
 	}
 
-	return strings.Replace(jp.string, "~", home, 1), nil
+	return strings.Replace(jp.Data, "~", home, 1), nil
 }

@@ -15,16 +15,16 @@ var (
 
 // JSONProxy 验证给定字符串是否是合法的URL
 type JSONProxy struct {
-	string
+	Data string
 }
 
 // IsURL 如果p的值是合法的URL，则返回true
 func (p *JSONProxy) IsURL() bool {
-	return matcher.MatchString(p.string)
+	return matcher.MatchString(p.Data)
 }
 
 func (p JSONProxy) String() string {
-	return p.string
+	return p.Data
 }
 
 func (p *JSONProxy) UnmarshalJSON(b []byte) error {
@@ -32,10 +32,10 @@ func (p *JSONProxy) UnmarshalJSON(b []byte) error {
 	// 对于字符串的json值，需要手动去除双引号
 	data = strings.TrimSuffix(data, "\"")
 	data = strings.TrimPrefix(data, "\"")
-	p.string = data
+	p.Data = data
 
 	// 允许""表示不使用proxy
-	if !p.IsURL() && p.string != "" {
+	if !p.IsURL() && p.Data != "" {
 		return ErrNotURL
 	}
 
@@ -43,9 +43,9 @@ func (p *JSONProxy) UnmarshalJSON(b []byte) error {
 }
 
 func (p *JSONProxy) MarshalJSON() ([]byte, error) {
-	if !p.IsURL() && p.string != "" {
+	if !p.IsURL() && p.Data != "" {
 		return nil, ErrNotURL
 	}
 
-	return []byte("\"" + p.string + "\""), nil
+	return []byte("\"" + p.Data + "\""), nil
 }

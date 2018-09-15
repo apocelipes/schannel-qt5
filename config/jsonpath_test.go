@@ -11,7 +11,7 @@ func TestAbsPath(t *testing.T) {
 	p1 := JSONPath{"/testing/abs/path"}
 
 	data1, err := p1.AbsPath()
-	if data1 != p1.string {
+	if data1 != p1.Data {
 		t.Error("wrong on abs path: " + data1)
 	} else if err != nil {
 		t.Error(err)
@@ -53,7 +53,7 @@ func TestUnmarshalJson(t *testing.T) {
 		t.Error(err)
 	}
 
-	if j.Port != 12345 || j.Path.string != "~/.test/" {
+	if j.Port != 12345 || j.Path.Data != "~/.test/" {
 		t.Error("unmarshal error")
 	}
 }
@@ -61,7 +61,7 @@ func TestUnmarshalJson(t *testing.T) {
 func TestMarshalJson(t *testing.T) {
 	j := new(p)
 	j.Port = 12345
-	j.Path.string = "~/.test/"
+	j.Path.Data = "~/.test/"
 	data, err := json.Marshal(j)
 	if err != nil {
 		t.Error(err)
