@@ -10,7 +10,7 @@ var (
 	// ErrNotURL 不是合法的URL
 	ErrNotURL = errors.New("not an valid URL")
 
-	matcher = regexp.MustCompile(`(http(s)?|socks5)://([\w\-]+\.)+[\w\-]+(:\d+)?(/[\w\- ./?%&=]*)?`)
+	matcher = regexp.MustCompile(`^(http(s)?|socks5)://([\w\-]+\.)+[\w\-]+(:\d+)?(/[\w\- ./?%&=]*)?$`)
 )
 
 // JSONProxy 验证给定字符串是否是合法的URL

@@ -27,6 +27,10 @@ func TestIsURL(t *testing.T) {
 			data: "127.0.0.1:1025/",
 			res:  false,
 		},
+		{
+			data: "https://socks5://www.test.com/",
+			res:  false,
+		},
 	}
 
 	for _, v := range testData {

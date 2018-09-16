@@ -24,9 +24,9 @@ func TestMarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
 	u.UserName = "test"
 	u.Passwd = "testing"
-	u.SSRConfigPath.string = "/tmp/testing/t.json"
-	u.SSRBin.string = "/tmp/testing/a.out"
-	u.LogFile.string = "/tmp/a.log"
+	u.SSRConfigPath.Data = "/tmp/testing/t.json"
+	u.SSRBin.Data = "/tmp/testing/a.out"
+	u.LogFile.Data = "/tmp/a.log"
 
 	data, err := json.MarshalIndent(u, "", "\t")
 	if err != nil {
