@@ -24,7 +24,7 @@ func TestMarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
 	u.UserName = "test"
 	u.Passwd = "testing"
-	u.SSRConfigPath.Data = "/tmp/testing/t.json"
+	u.SSRNodeConfigPath.Data = "/tmp/testing/t.json"
 	u.SSRBin.Data = "/tmp/testing/a.out"
 	u.LogFile.Data = "/tmp/a.log"
 

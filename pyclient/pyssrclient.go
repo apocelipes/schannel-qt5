@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os/exec"
 	"schannel-qt5/urls"
+	"strings"
 	"time"
 
 	"schannel-qt5/config"
@@ -15,30 +16,36 @@ import (
 type PySSRClient struct {
 	bin string
 	// binArg 运行参数
-	binArg string
-	config string
+	binArgs []string
+	// 配置
+	conf config.ClientConfig
 }
 
 func init() {
 	// 注册为可用的Launcher，name为python
-	ssr.SetLuancherMaker("python", ssr.LauncherMaker(NewPySSRClient))
+	ssr.SetLuancherMaker("python", ssr.LauncherMaker(newPySSRClient))
 }
 
-// NewPySSRClient 这个函数供ssr.LauncherMaker调用，用于生成ssr.Launcher
-func NewPySSRClient(c *config.UserConfig) ssr.Launcher {
+// newPySSRClient 这个函数供ssr.LauncherMaker调用，用于生成ssr.Launcher
+func newPySSRClient(c *config.UserConfig) ssr.Launcher {
 	p := new(PySSRClient)
 	bin, err := c.SSRBin.AbsPath()
 	if err != nil {
 		return nil
 	}
 	p.bin = bin
-	p.config, err = c.SSRConfigPath.AbsPath()
+
+	nodeConfigFile, err := c.SSRNodeConfigPath.AbsPath()
 	if err != nil {
 		return nil
 	}
 
-	// -c ssr_config_file
-	p.binArg = "-c" + p.config
+	p.conf = c.SSRClientConfig
+
+	// -c ssr_node_config_file
+	p.binArgs = make([]string, 0)
+	p.binArgs = append(p.binArgs, "-c", nodeConfigFile)
+	p.binArgs = append(p.binArgs, p.conf.(*ClientConfig).GenArgs()...)
 
 	return p
 }
@@ -46,25 +53,28 @@ func NewPySSRClient(c *config.UserConfig) ssr.Launcher {
 // Start 启动客户端
 func (p *PySSRClient) Start() error {
 	// 使用pkexec在gui程序中请求权限
-	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "start")
+	args := strings.Join(p.binArgs, " ")
+	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "start")
 	return cmd.Run()
 }
 
 // Restart 重新启动客户端
 func (p *PySSRClient) Restart() error {
-	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "restart")
+	args := strings.Join(p.binArgs, " ")
+	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "restart")
 	return cmd.Run()
 }
 
 // Stop 停止客户端
 func (p *PySSRClient) Stop() error {
-	cmd := exec.Command("pkexec", "python", p.bin, p.binArg, "-d", "stop")
+	args := strings.Join(p.binArgs, " ")
+	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "stop")
 	return cmd.Run()
 }
 
 // ConnectionCheck 检查代理是否可用，不可用则返回error
 func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
-	proxyURL, err := url.Parse("socks5://127.0.0.1:1080")
+	proxyURL, err := url.Parse("socks5://" + p.conf.LocalAddr() + ":" + p.conf.LocalPort())
 	if err != nil {
 		return err
 	}
@@ -84,7 +94,7 @@ func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return err
 	}
 

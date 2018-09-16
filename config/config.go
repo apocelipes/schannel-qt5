@@ -27,10 +27,12 @@ type UserConfig struct {
 	Proxy    JSONProxy `json:"proxy_url"`
 	LogFile  JSONPath  `json:"log_file"`
 	// ssr config
-	SSRConfigPath JSONPath `json:"ssr_config_path"`
-	PidFile       JSONPath `json:"pid_file"`
+	SSRNodeConfigPath   JSONPath `json:"ssr_node_config_path"`
+	SSRClientConfigPath JSONPath `json:"ssr_client_config_path"`
 	// ssr client bin path
 	SSRBin JSONPath `json:"ssr_bin"`
+	// ssr client config的实体数据
+	SSRClientConfig ClientConfig `json:"-"`
 }
 
 // ConfigPath 返回`～`被替换为$HOME的config path
@@ -87,6 +89,10 @@ func (u *UserConfig) LoadConfig() error {
 	}
 
 	if err = json.Unmarshal(data, u); err != nil {
+		return err
+	}
+
+	if err := u.SSRClientConfig.Load(u.SSRClientConfigPath.String()); err != nil {
 		return err
 	}
 

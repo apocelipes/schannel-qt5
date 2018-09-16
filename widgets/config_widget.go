@@ -5,6 +5,7 @@ import (
 	"github.com/therecipe/qt/widgets"
 	"regexp"
 	"schannel-qt5/config"
+	"schannel-qt5/pyclient"
 	"sort"
 	"strings"
 )
@@ -26,11 +27,11 @@ type ConfigWidget struct {
 	_ func(*config.UserConfig) `signal:"configChanged"`
 
 	// client设置
-	name, passwd, logFile, pidFile             *widgets.QLineEdit
-	nameMsg, passwdMsg, logFileMsg, pidFileMsg *ColorLabel
+	name, passwd, logFile          *widgets.QLineEdit
+	nameMsg, passwdMsg, logFileMsg *ColorLabel
 	// ssr设置
-	configPath, binPath       *widgets.QLineEdit
-	configPathMsg, binPathMsg *ColorLabel
+	nodeConfigPath, ssrConfigPath, binPath          *widgets.QLineEdit
+	nodeConfigPathMsg, ssrConfigPathMsg, binPathMsg *ColorLabel
 	// 代理设置
 	proxy     *widgets.QLineEdit
 	proxyType *widgets.QComboBox
@@ -55,8 +56,8 @@ func NewConfigWidget2(conf *config.UserConfig) *ConfigWidget {
 
 // InitUI 初始化并显示
 func (w *ConfigWidget) InitUI() {
-	// client设置布局
-	clientBox := widgets.NewQGroupBox2("客户端设置（用户名和密码重启生效）", nil)
+	// user设置布局
+	userBox := widgets.NewQGroupBox2("客户端设置（用户名和密码重启生效）", nil)
 	nameLabel := widgets.NewQLabel2("用户名:", nil, 0)
 	w.name = widgets.NewQLineEdit2(w.conf.UserName, nil)
 	w.name.SetPlaceholderText("邮箱")
@@ -87,12 +88,6 @@ func (w *ConfigWidget) InitUI() {
 	w.logFileMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.logFileMsg.Hide()
 
-	pidFileLabel := widgets.NewQLabel2("pidfile:", nil, 0)
-	w.pidFile = widgets.NewQLineEdit2(w.conf.PidFile.String(), nil)
-	w.pidFile.SetPlaceholderText("pidfile文件路径")
-	w.pidFileMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
-	w.pidFileMsg.Hide()
-
 	nameLayout := widgets.NewQHBoxLayout()
 	nameLayout.AddWidget(nameLabel, 0, 0)
 	nameLayout.AddWidget(w.name, 0, 0)
@@ -102,28 +97,30 @@ func (w *ConfigWidget) InitUI() {
 	logFileLayout := widgets.NewQHBoxLayout()
 	logFileLayout.AddWidget(logFileLabel, 0, 0)
 	logFileLayout.AddWidget(w.logFile, 0, 0)
-	pidFileLayout := widgets.NewQHBoxLayout()
-	pidFileLayout.AddWidget(pidFileLabel, 0, 0)
-	pidFileLayout.AddWidget(w.pidFile, 0, 0)
-	clientLayout := widgets.NewQVBoxLayout()
-	clientLayout.AddLayout(nameLayout, 0)
-	clientLayout.AddWidget(w.nameMsg, 0, 0)
-	clientLayout.AddLayout(passwdLayout, 0)
-	clientLayout.AddWidget(echoCheck, 0, 0)
-	clientLayout.AddWidget(w.passwdMsg, 0, 0)
-	clientLayout.AddLayout(logFileLayout, 0)
-	clientLayout.AddWidget(w.logFileMsg, 0, 0)
-	clientLayout.AddLayout(pidFileLayout, 0)
-	clientLayout.AddWidget(w.pidFileMsg, 0, 0)
-	clientBox.SetLayout(clientLayout)
+
+	userLayout := widgets.NewQVBoxLayout()
+	userLayout.AddLayout(nameLayout, 0)
+	userLayout.AddWidget(w.nameMsg, 0, 0)
+	userLayout.AddLayout(passwdLayout, 0)
+	userLayout.AddWidget(echoCheck, 0, 0)
+	userLayout.AddWidget(w.passwdMsg, 0, 0)
+	userLayout.AddLayout(logFileLayout, 0)
+	userLayout.AddWidget(w.logFileMsg, 0, 0)
+	userBox.SetLayout(userLayout)
 
 	// ssr设置布局
 	ssrBox := widgets.NewQGroupBox2("ssr设置", nil)
-	configLabel := widgets.NewQLabel2("ssr配置文件路径:", nil, 0)
-	w.configPath = widgets.NewQLineEdit2(w.conf.SSRConfigPath.String(), nil)
-	w.configPath.SetPlaceholderText("绝对路径")
-	w.configPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
-	w.configPathMsg.Hide()
+	ssrConfigLabel := widgets.NewQLabel2("ssr客户端配置文件路径:", nil, 0)
+	w.ssrConfigPath = widgets.NewQLineEdit2(w.conf.SSRClientConfigPath.String(), nil)
+	w.ssrConfigPath.SetPlaceholderText("绝对路径")
+	w.ssrConfigPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
+	w.ssrConfigPathMsg.Hide()
+
+	nodeConfigLabel := widgets.NewQLabel2("ssr节点配置文件路径:", nil, 0)
+	w.nodeConfigPath = widgets.NewQLineEdit2(w.conf.SSRNodeConfigPath.String(), nil)
+	w.nodeConfigPath.SetPlaceholderText("绝对路径")
+	w.nodeConfigPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
+	w.nodeConfigPathMsg.Hide()
 
 	binLabel := widgets.NewQLabel2("ssr执行文件路径:", nil, 0)
 	w.binPath = widgets.NewQLineEdit2(w.conf.SSRBin.String(), nil)
@@ -131,15 +128,21 @@ func (w *ConfigWidget) InitUI() {
 	w.binPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.binPathMsg.Hide()
 
-	configLayout := widgets.NewQHBoxLayout()
-	configLayout.AddWidget(configLabel, 0, 0)
-	configLayout.AddWidget(w.configPath, 0, 0)
+	ssrConfigLayout := widgets.NewQHBoxLayout()
+	ssrConfigLayout.AddWidget(ssrConfigLabel, 0, 0)
+	ssrConfigLayout.AddWidget(w.ssrConfigPath, 0, 0)
+	nodeConfigLayout := widgets.NewQHBoxLayout()
+	nodeConfigLayout.AddWidget(nodeConfigLabel, 0, 0)
+	nodeConfigLayout.AddWidget(w.nodeConfigPath, 0, 0)
 	binLayout := widgets.NewQHBoxLayout()
 	binLayout.AddWidget(binLabel, 0, 0)
 	binLayout.AddWidget(w.binPath, 0, 0)
+
 	ssrLayout := widgets.NewQVBoxLayout()
-	ssrLayout.AddLayout(configLayout, 0)
-	ssrLayout.AddWidget(w.configPathMsg, 0, 0)
+	ssrLayout.AddLayout(ssrConfigLayout, 0)
+	ssrLayout.AddWidget(w.ssrConfigPathMsg, 0, 0)
+	ssrLayout.AddLayout(nodeConfigLayout, 0)
+	ssrLayout.AddWidget(w.nodeConfigPathMsg, 0, 0)
 	ssrLayout.AddLayout(binLayout, 0)
 	ssrLayout.AddWidget(w.binPathMsg, 0, 0)
 	ssrBox.SetLayout(ssrLayout)
@@ -177,6 +180,7 @@ func (w *ConfigWidget) InitUI() {
 	urlLayout := widgets.NewQHBoxLayout()
 	urlLayout.AddWidget(proxyLabel, 0, 0)
 	urlLayout.AddWidget(w.proxy, 0, 0)
+
 	proxyLayout := widgets.NewQVBoxLayout()
 	proxyLayout.AddLayout(typeLayout, 0)
 	proxyLayout.AddLayout(urlLayout, 0)
@@ -187,7 +191,7 @@ func (w *ConfigWidget) InitUI() {
 	saveButton.ConnectClicked(w.saveConfig)
 
 	mainLayout := widgets.NewQVBoxLayout()
-	mainLayout.AddWidget(clientBox, 0, 0)
+	mainLayout.AddWidget(userBox, 0, 0)
 	mainLayout.AddWidget(ssrBox, 0, 0)
 	mainLayout.AddWidget(w.proxyBox, 0, 0)
 	mainLayout.AddStretch(0)
@@ -229,13 +233,13 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 		flag = true
 	}
 
-	err = w.validPidFile()
-	if showErrorMsg(w.pidFileMsg, err) {
+	err = w.validSSRConfigPath()
+	if showErrorMsg(w.ssrConfigPathMsg, err) {
 		flag = true
 	}
 
-	err = w.validConfigPath()
-	if showErrorMsg(w.configPathMsg, err) {
+	err = w.validNodeConfigPath()
+	if showErrorMsg(w.nodeConfigPathMsg, err) {
 		flag = true
 	}
 
@@ -253,7 +257,15 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 		return
 	}
 
-	w.conf = w.getConfig()
+	conf := w.getConfig()
+	if conf == nil {
+		errorMsg := widgets.NewQErrorMessage(nil)
+		errorMsg.ShowMessage("获取ssr_client配置出错: " + w.conf.SSRClientConfigPath.String())
+		errorMsg.Exec()
+		return
+	}
+
+	w.conf = conf
 	if err := w.conf.StoreConfig(); err != nil {
 		errorMsg := widgets.NewQErrorMessage(nil)
 		errorMsg.ShowMessage("保存出错: " + err.Error())
@@ -285,9 +297,14 @@ func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf.UserName = w.name.Text()
 	conf.Passwd = w.passwd.Text()
 	conf.LogFile = config.JSONPath{Data: w.logFile.Text()}
-	conf.SSRConfigPath = config.JSONPath{Data: w.configPath.Text()}
+	conf.SSRNodeConfigPath = config.JSONPath{Data: w.nodeConfigPath.Text()}
 	conf.SSRBin = config.JSONPath{Data: w.binPath.Text()}
 	conf.Proxy = config.JSONProxy{Data: w.GetProxyUrl()}
+	conf.SSRClientConfigPath = config.JSONPath{Data: w.ssrConfigPath.Text()}
+	conf.SSRClientConfig = &pyclient.ClientConfig{}
+	if err := conf.SSRClientConfig.Load(conf.SSRClientConfigPath.String()); err != nil {
+		return nil
+	}
 
 	return conf
 }
@@ -345,22 +362,9 @@ func (w *ConfigWidget) validLogFile() error {
 	return nil
 }
 
-// validPidFile 验证pidfile路径
-func (w *ConfigWidget) validPidFile() error {
-	text := w.pidFile.Text()
-	jpath := config.JSONPath{Data: text}
-	if _, err := jpath.AbsPath(); err != nil {
-		return err
-	} else if text[len(text)-1] == '/' {
-		return errors.New("dir is not allowed")
-	}
-
-	return nil
-}
-
-// validConfigPath 验证ssr配置文件路径是否在$HOME下或者是绝对路径
-func (w *ConfigWidget) validConfigPath() error {
-	text := w.configPath.Text()
+// validNodeConfigPath 验证ssr配置文件路径是否在$HOME下或者是绝对路径
+func (w *ConfigWidget) validNodeConfigPath() error {
+	text := w.nodeConfigPath.Text()
 	jpath := config.JSONPath{Data: text}
 	if _, err := jpath.AbsPath(); err != nil {
 		return err
@@ -374,6 +378,19 @@ func (w *ConfigWidget) validConfigPath() error {
 // validBinPath 验证ssr可执行文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validBinPath() error {
 	text := w.binPath.Text()
+	jpath := config.JSONPath{Data: text}
+	if _, err := jpath.AbsPath(); err != nil {
+		return err
+	} else if text[len(text)-1] == '/' {
+		return errors.New("dir is not allowed")
+	}
+
+	return nil
+}
+
+// validSSRConfigPath 验证ssr可执行文件路径是否在$HOME下或者是绝对路径
+func (w *ConfigWidget) validSSRConfigPath() error {
+	text := w.ssrConfigPath.Text()
 	jpath := config.JSONPath{Data: text}
 	if _, err := jpath.AbsPath(); err != nil {
 		return err
