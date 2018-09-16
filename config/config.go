@@ -21,14 +21,16 @@ var (
 
 // UserConfig 用户配置
 type UserConfig struct {
-	UserName string `json:"user_name"`
-	Passwd   string `json:"user_password"`
+	// client config
+	UserName string    `json:"user_name"`
+	Passwd   string    `json:"user_password"`
 	Proxy    JSONProxy `json:"proxy_url"`
+	LogFile  JSONPath  `json:"log_file"`
 	// ssr config
 	SSRConfigPath JSONPath `json:"ssr_config_path"`
+	PidFile       JSONPath `json:"pid_file"`
 	// ssr client bin path
-	SSRBin  JSONPath `json:"ssr_bin"`
-	LogFile JSONPath `json:"log_file"`
+	SSRBin JSONPath `json:"ssr_bin"`
 }
 
 // ConfigPath 返回`～`被替换为$HOME的config path

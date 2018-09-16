@@ -26,8 +26,8 @@ type ConfigWidget struct {
 	_ func(*config.UserConfig) `signal:"configChanged"`
 
 	// client设置
-	name, passwd, logFile *widgets.QLineEdit
-	nameMsg, passwdMsg, logFileMsg   *ColorLabel
+	name, passwd, logFile, pidFile             *widgets.QLineEdit
+	nameMsg, passwdMsg, logFileMsg, pidFileMsg *ColorLabel
 	// ssr设置
 	configPath, binPath       *widgets.QLineEdit
 	configPathMsg, binPathMsg *ColorLabel
@@ -81,12 +81,17 @@ func (w *ConfigWidget) InitUI() {
 		w.passwd.SetEchoMode(widgets.QLineEdit__Password)
 	})
 
-	logFileLabel := widgets.NewQLabel2("日志文件路径", nil, 0)
-	w.logFile = widgets.NewQLineEdit(nil)
+	logFileLabel := widgets.NewQLabel2("日志文件路径:", nil, 0)
+	w.logFile = widgets.NewQLineEdit2(w.conf.LogFile.String(), nil)
 	w.logFile.SetPlaceholderText("日志文件保存路径")
-	w.logFile.SetText(w.conf.LogFile.String())
-	w.logFileMsg = NewColorLabelWithColor("路径需要为绝对路径", "red")
+	w.logFileMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.logFileMsg.Hide()
+
+	pidFileLabel := widgets.NewQLabel2("pidfile:", nil, 0)
+	w.pidFile = widgets.NewQLineEdit2(w.conf.PidFile.String(), nil)
+	w.pidFile.SetPlaceholderText("pidfile文件路径")
+	w.pidFileMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
+	w.pidFileMsg.Hide()
 
 	nameLayout := widgets.NewQHBoxLayout()
 	nameLayout.AddWidget(nameLabel, 0, 0)
@@ -97,6 +102,9 @@ func (w *ConfigWidget) InitUI() {
 	logFileLayout := widgets.NewQHBoxLayout()
 	logFileLayout.AddWidget(logFileLabel, 0, 0)
 	logFileLayout.AddWidget(w.logFile, 0, 0)
+	pidFileLayout := widgets.NewQHBoxLayout()
+	pidFileLayout.AddWidget(pidFileLabel, 0, 0)
+	pidFileLayout.AddWidget(w.pidFile, 0, 0)
 	clientLayout := widgets.NewQVBoxLayout()
 	clientLayout.AddLayout(nameLayout, 0)
 	clientLayout.AddWidget(w.nameMsg, 0, 0)
@@ -105,6 +113,8 @@ func (w *ConfigWidget) InitUI() {
 	clientLayout.AddWidget(w.passwdMsg, 0, 0)
 	clientLayout.AddLayout(logFileLayout, 0)
 	clientLayout.AddWidget(w.logFileMsg, 0, 0)
+	clientLayout.AddLayout(pidFileLayout, 0)
+	clientLayout.AddWidget(w.pidFileMsg, 0, 0)
 	clientBox.SetLayout(clientLayout)
 
 	// ssr设置布局
@@ -112,13 +122,13 @@ func (w *ConfigWidget) InitUI() {
 	configLabel := widgets.NewQLabel2("ssr配置文件路径:", nil, 0)
 	w.configPath = widgets.NewQLineEdit2(w.conf.SSRConfigPath.String(), nil)
 	w.configPath.SetPlaceholderText("绝对路径")
-	w.configPathMsg = NewColorLabelWithColor("路径需要为绝对路径", "red")
+	w.configPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.configPathMsg.Hide()
 
 	binLabel := widgets.NewQLabel2("ssr执行文件路径:", nil, 0)
 	w.binPath = widgets.NewQLineEdit2(w.conf.SSRBin.String(), nil)
 	w.binPath.SetPlaceholderText("绝对路径")
-	w.binPathMsg = NewColorLabelWithColor("路径需要为绝对路径", "red")
+	w.binPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.binPathMsg.Hide()
 
 	configLayout := widgets.NewQHBoxLayout()
@@ -216,6 +226,11 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 
 	err = w.validLogFile()
 	if showErrorMsg(w.logFileMsg, err) {
+		flag = true
+	}
+
+	err = w.validPidFile()
+	if showErrorMsg(w.pidFileMsg, err) {
 		flag = true
 	}
 
@@ -318,9 +333,26 @@ func (w *ConfigWidget) validPassword() error {
 
 // validLogFile 验证日志文件保存路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validLogFile() error {
-	jpath := config.JSONPath{Data: w.logFile.Text()}
+	text := w.logFile.Text()
+	jpath := config.JSONPath{Data: text}
 	if _, err := jpath.AbsPath(); err != nil {
 		return err
+	} else if text[len(text)-1] == '/' {
+		// 防止输入的是目录（不能防止只输入目录名的情况）
+		return errors.New("dir is not allowed")
+	}
+
+	return nil
+}
+
+// validPidFile 验证pidfile路径
+func (w *ConfigWidget) validPidFile() error {
+	text := w.pidFile.Text()
+	jpath := config.JSONPath{Data: text}
+	if _, err := jpath.AbsPath(); err != nil {
+		return err
+	} else if text[len(text)-1] == '/' {
+		return errors.New("dir is not allowed")
 	}
 
 	return nil
@@ -328,9 +360,12 @@ func (w *ConfigWidget) validLogFile() error {
 
 // validConfigPath 验证ssr配置文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validConfigPath() error {
-	jpath := config.JSONPath{Data: w.configPath.Text()}
+	text := w.configPath.Text()
+	jpath := config.JSONPath{Data: text}
 	if _, err := jpath.AbsPath(); err != nil {
 		return err
+	} else if text[len(text)-1] == '/' {
+		return errors.New("dir is not allowed")
 	}
 
 	return nil
@@ -338,9 +373,12 @@ func (w *ConfigWidget) validConfigPath() error {
 
 // validBinPath 验证ssr可执行文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validBinPath() error {
-	jpath := config.JSONPath{Data: w.binPath.Text()}
+	text := w.binPath.Text()
+	jpath := config.JSONPath{Data: text}
 	if _, err := jpath.AbsPath(); err != nil {
 		return err
+	} else if text[len(text)-1] == '/' {
+		return errors.New("dir is not allowed")
 	}
 
 	return nil
