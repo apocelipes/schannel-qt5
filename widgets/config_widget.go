@@ -3,7 +3,6 @@ package widgets
 import (
 	"errors"
 	"github.com/therecipe/qt/widgets"
-	"regexp"
 	"schannel-qt5/config"
 	"schannel-qt5/pyclient"
 	"sort"
@@ -27,8 +26,8 @@ type ConfigWidget struct {
 	_ func(*config.UserConfig) `signal:"configChanged"`
 
 	// client设置
-	name, passwd, logFile          *widgets.QLineEdit
-	nameMsg, passwdMsg, logFileMsg *ColorLabel
+	logFile    *widgets.QLineEdit
+	logFileMsg *ColorLabel
 	// ssr设置
 	nodeConfigPath, ssrConfigPath, binPath          *widgets.QLineEdit
 	nodeConfigPathMsg, ssrConfigPathMsg, binPathMsg *ColorLabel
@@ -57,30 +56,7 @@ func NewConfigWidget2(conf *config.UserConfig) *ConfigWidget {
 // InitUI 初始化并显示
 func (w *ConfigWidget) InitUI() {
 	// user设置布局
-	userBox := widgets.NewQGroupBox2("客户端设置（用户名和密码重启生效）", nil)
-	nameLabel := widgets.NewQLabel2("用户名:", nil, 0)
-	w.name = widgets.NewQLineEdit2(w.conf.UserName, nil)
-	w.name.SetPlaceholderText("邮箱")
-	w.nameMsg = NewColorLabelWithColor("用户名必须为邮箱", "red")
-	w.nameMsg.Hide()
-
-	passwdLabel := widgets.NewQLabel2("密码:     ", nil, 0)
-	w.passwd = widgets.NewQLineEdit(nil)
-	w.passwd.SetPlaceholderText("密码")
-	// 设置密码默认不可见
-	w.passwd.SetEchoMode(widgets.QLineEdit__Password)
-	w.passwd.SetText(w.conf.Passwd)
-	w.passwdMsg = NewColorLabelWithColor("密码不能为空", "red")
-	w.passwdMsg.Hide()
-	echoCheck := widgets.NewQCheckBox2("密码可见", nil)
-	echoCheck.ConnectClicked(func(_ bool) {
-		if echoCheck.IsChecked() {
-			w.passwd.SetEchoMode(widgets.QLineEdit__Normal)
-			return
-		}
-
-		w.passwd.SetEchoMode(widgets.QLineEdit__Password)
-	})
+	userBox := widgets.NewQGroupBox2("客户端设置（重启生效）", nil)
 
 	logFileLabel := widgets.NewQLabel2("日志文件路径:", nil, 0)
 	w.logFile = widgets.NewQLineEdit2(w.conf.LogFile.String(), nil)
@@ -88,22 +64,11 @@ func (w *ConfigWidget) InitUI() {
 	w.logFileMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	w.logFileMsg.Hide()
 
-	nameLayout := widgets.NewQHBoxLayout()
-	nameLayout.AddWidget(nameLabel, 0, 0)
-	nameLayout.AddWidget(w.name, 0, 0)
-	passwdLayout := widgets.NewQHBoxLayout()
-	passwdLayout.AddWidget(passwdLabel, 0, 0)
-	passwdLayout.AddWidget(w.passwd, 0, 0)
 	logFileLayout := widgets.NewQHBoxLayout()
 	logFileLayout.AddWidget(logFileLabel, 0, 0)
 	logFileLayout.AddWidget(w.logFile, 0, 0)
 
 	userLayout := widgets.NewQVBoxLayout()
-	userLayout.AddLayout(nameLayout, 0)
-	userLayout.AddWidget(w.nameMsg, 0, 0)
-	userLayout.AddLayout(passwdLayout, 0)
-	userLayout.AddWidget(echoCheck, 0, 0)
-	userLayout.AddWidget(w.passwdMsg, 0, 0)
 	userLayout.AddLayout(logFileLayout, 0)
 	userLayout.AddWidget(w.logFileMsg, 0, 0)
 	userBox.SetLayout(userLayout)
@@ -194,7 +159,6 @@ func (w *ConfigWidget) InitUI() {
 	mainLayout.AddWidget(userBox, 0, 0)
 	mainLayout.AddWidget(ssrBox, 0, 0)
 	mainLayout.AddWidget(w.proxyBox, 0, 0)
-	mainLayout.AddStretch(0)
 	mainLayout.AddWidget(saveButton, 0, 0)
 	w.SetLayout(mainLayout)
 }
@@ -217,16 +181,6 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 	// 保存时不可修改设置信息
 	w.SetEnabled(false)
 	defer w.SetEnabled(true)
-
-	err = w.validName()
-	if showErrorMsg(w.nameMsg, err) {
-		flag = true
-	}
-
-	err = w.validPassword()
-	if showErrorMsg(w.passwdMsg, err) {
-		flag = true
-	}
 
 	err = w.validLogFile()
 	if showErrorMsg(w.logFileMsg, err) {
@@ -294,8 +248,8 @@ func showErrorMsg(label *ColorLabel, err error) bool {
 // getConfig 根据设置信息生成新的config对象
 func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf := &config.UserConfig{}
-	conf.UserName = w.name.Text()
-	conf.Passwd = w.passwd.Text()
+	conf.UserName = w.conf.UserName
+	conf.Passwd = w.conf.Passwd
 	conf.LogFile = config.JSONPath{Data: w.logFile.Text()}
 	conf.SSRNodeConfigPath = config.JSONPath{Data: w.nodeConfigPath.Text()}
 	conf.SSRBin = config.JSONPath{Data: w.binPath.Text()}
@@ -324,25 +278,6 @@ func (w *ConfigWidget) validProxy() error {
 	p := config.JSONProxy{Data: w.GetProxyUrl()}
 	if !p.IsURL() && p.String() != "" {
 		return config.ErrNotURL
-	}
-
-	return nil
-}
-
-// validName 验证username是否是合法的邮箱地址
-func (w *ConfigWidget) validName() error {
-	email := regexp.MustCompile(`^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$`)
-	if !email.MatchString(w.name.Text()) {
-		return errors.New("not a valid email address")
-	}
-
-	return nil
-}
-
-// validPassword 验证password是否合法
-func (w *ConfigWidget) validPassword() error {
-	if w.passwd.Text() == "" {
-		return errors.New("no valid password")
 	}
 
 	return nil
