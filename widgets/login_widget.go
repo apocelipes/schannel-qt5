@@ -134,17 +134,14 @@ func (l *LoginWidget) loginFailed() {
 }
 
 func (l *LoginWidget) setPassword(user string) {
-	if user != "" {
-		info, err := models.GetUserPassword(l.db, user)
-		if err != nil {
-			l.logger.Println(err)
-			l.username.ClearEditText()
-			return
-		} else if info.Passwd != nil {
-			l.password.SetText(string(info.Passwd))
-			return
-		}
+	info, err := models.GetUserPassword(l.db, user)
+	if err != nil {
+		l.logger.Println(err)
+		l.username.SetCurrentText(user)
+		l.password.SetText("")
+		return
+	} else if info.Passwd != nil {
+		l.password.SetText(string(info.Passwd))
+		return
 	}
-
-	l.username.ClearEditText()
 }
