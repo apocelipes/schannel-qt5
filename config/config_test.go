@@ -22,8 +22,6 @@ func TestConfigPath(t *testing.T) {
 
 func TestMarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
-	u.UserName = "test"
-	u.Passwd = "testing"
 	u.SSRNodeConfigPath.Data = "/tmp/testing/t.json"
 	u.SSRBin.Data = "/tmp/testing/a.out"
 	u.LogFile.Data = "/tmp/a.log"
@@ -37,7 +35,7 @@ func TestMarshalUserConf(t *testing.T) {
 
 func TestUnmarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
-	data := `{"user_name":"test","user_password":"testing","ssr_config_path":"/tmp/testing/t.json","ssr_bin":"/tmp/testing/a.out","log_file":"/tmp/a.log"}`
+	data := `{"ssr_config_path":"/tmp/testing/t.json","ssr_bin":"/tmp/testing/a.out","log_file":"/tmp/a.log"}`
 	if err := json.Unmarshal([]byte(data), u); err != nil {
 		t.Error(err)
 	}

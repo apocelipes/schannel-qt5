@@ -22,8 +22,6 @@ var (
 // UserConfig 用户配置
 type UserConfig struct {
 	// client config
-	UserName string    `json:"user_name"`
-	Passwd   string    `json:"user_password"`
 	Proxy    JSONProxy `json:"proxy_url"`
 	LogFile  JSONPath  `json:"log_file"`
 	// ssr config
@@ -64,6 +62,10 @@ func (u *UserConfig) StoreConfig() error {
 	}
 
 	if _, err = f.Write(data); err != nil {
+		return err
+	}
+
+	if err := u.SSRClientConfig.Store(u.SSRClientConfigPath.String()); err != nil {
 		return err
 	}
 

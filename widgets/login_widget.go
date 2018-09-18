@@ -4,10 +4,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jinzhu/gorm"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
 	"schannel-qt5/crawler"
+	"schannel-qt5/models"
 )
 
 type LoginWidget struct {
@@ -18,15 +20,16 @@ type LoginWidget struct {
 	_ func()               `signal:"loginFailed,auto"`
 	_ func([]*http.Cookie) `signal:"logined"`
 
-	username    *widgets.QLineEdit
+	username    *widgets.QComboBox
 	password    *widgets.QLineEdit
 	loginStatus *ColorLabel
 	remember    *widgets.QCheckBox
 	conf        *config.UserConfig
 	logger      *log.Logger
+	db          *gorm.DB
 }
 
-func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger) *LoginWidget {
+func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db *gorm.DB) *LoginWidget {
 	if conf == nil || logger == nil {
 		return nil
 	}
@@ -34,30 +37,37 @@ func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger) *LoginWidget {
 	widget := NewLoginWidget(nil, 0)
 	widget.conf = conf
 	widget.logger = logger
+	widget.db = db
 	widget.InitUI()
 
 	return widget
 }
 
 func (l *LoginWidget) InitUI() {
-	userLabel := widgets.NewQLabel2("&username:", nil, 0)
-	l.username = widgets.NewQLineEdit(nil)
-	l.username.SetPlaceholderText("邮箱")
-	if l.conf.UserName != "" {
-		l.username.SetText(l.conf.UserName)
+	userLabel := widgets.NewQLabel2("用户名: ", nil, 0)
+	l.username = widgets.NewQComboBox(nil)
+	l.username.SetEditable(true)
+	users, err := models.GetAllUsers(l.db)
+	if err != nil {
+		l.logger.Fatalln(err)
 	}
+	// 第一项为空
+	names := make([]string, 1, len(users)+1)
+	for _, v := range users {
+		names = append(names, v.Name)
+	}
+	l.username.AddItems(names)
+	l.username.ConnectCurrentTextChanged(l.setPassword)
+
 	userLabel.SetBuddy(l.username)
 	userInputLayout := widgets.NewQHBoxLayout()
 	userInputLayout.AddWidget(userLabel, 0, 0)
 	userInputLayout.AddWidget(l.username, 0, 0)
 
-	passwdLabel := widgets.NewQLabel2("&password:", nil, 0)
+	passwdLabel := widgets.NewQLabel2("密码:", nil, 0)
 	l.password = widgets.NewQLineEdit(nil)
 	l.password.SetPlaceholderText("密码")
 	l.password.SetEchoMode(widgets.QLineEdit__Password)
-	if l.conf.Passwd != "" {
-		l.password.SetText(l.conf.Passwd)
-	}
 
 	passwdLabel.SetBuddy(l.password)
 	passwdInputLayout := widgets.NewQHBoxLayout()
@@ -68,21 +78,9 @@ func (l *LoginWidget) InitUI() {
 	l.loginStatus.Hide()
 
 	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)
-	echoCheck := widgets.NewQCheckBox2("密码可见", nil)
-	echoCheck.ConnectClicked(func(_ bool) {
-		if echoCheck.IsChecked() {
-			l.password.SetEchoMode(widgets.QLineEdit__Normal)
-			return
-		}
-
-		l.password.SetEchoMode(widgets.QLineEdit__Password)
-	})
 	loginButton := widgets.NewQPushButton2("登录", nil)
 	loginButton.ConnectClicked(l.checkLogin)
 
-	checkLayout := widgets.NewQHBoxLayout()
-	checkLayout.AddWidget(echoCheck, 0, 0)
-	checkLayout.AddWidget(l.remember, 0, 0)
 	loginLayout := widgets.NewQHBoxLayout()
 	loginLayout.AddStretch(0)
 	loginLayout.AddWidget(loginButton, 0, 0)
@@ -91,7 +89,7 @@ func (l *LoginWidget) InitUI() {
 	mainLayout.AddWidget(l.loginStatus, 0, 0)
 	mainLayout.AddLayout(userInputLayout, 0)
 	mainLayout.AddLayout(passwdInputLayout, 0)
-	mainLayout.AddLayout(checkLayout, 0)
+	mainLayout.AddWidget(l.remember, 0, 0)
 	mainLayout.AddLayout(loginLayout, 0)
 	l.SetLayout(mainLayout)
 }
@@ -102,7 +100,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 	defer l.SetEnabled(true)
 
 	passwd := l.password.Text()
-	user := l.username.Text()
+	user := l.username.CurrentText()
 	if user == "" || passwd == "" {
 		l.LoginFailed()
 		return
@@ -117,12 +115,9 @@ func (l *LoginWidget) checkLogin(_ bool) {
 	}
 
 	// 登陆成功，记住密码
-	if l.remember.IsChecked() &&
-		(passwd != l.conf.Passwd || user != l.conf.UserName) {
-		l.conf.Passwd = passwd
-		l.conf.UserName = user
-		if err := l.conf.StoreConfig(); err != nil {
-			log.Fatalf("set user and password failed: %v\n", err)
+	if l.remember.IsChecked() {
+		if err := models.SetUserPassword(l.db, user, []byte(passwd)); err != nil {
+			l.logger.Println(err)
 		}
 	}
 
@@ -136,4 +131,20 @@ func (l *LoginWidget) loginFailed() {
 	if l.loginStatus.IsHidden() {
 		l.loginStatus.Show()
 	}
+}
+
+func (l *LoginWidget) setPassword(user string) {
+	if user != "" {
+		info, err := models.GetUserPassword(l.db, user)
+		if err != nil {
+			l.logger.Println(err)
+			l.username.ClearEditText()
+			return
+		} else if info.Passwd != nil {
+			l.password.SetText(string(info.Passwd))
+			return
+		}
+	}
+
+	l.username.ClearEditText()
 }

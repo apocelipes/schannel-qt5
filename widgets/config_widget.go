@@ -248,8 +248,6 @@ func showErrorMsg(label *ColorLabel, err error) bool {
 // getConfig 根据设置信息生成新的config对象
 func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf := &config.UserConfig{}
-	conf.UserName = w.conf.UserName
-	conf.Passwd = w.conf.Passwd
 	conf.LogFile = config.JSONPath{Data: w.logFile.Text()}
 	conf.SSRNodeConfigPath = config.JSONPath{Data: w.nodeConfigPath.Text()}
 	conf.SSRBin = config.JSONPath{Data: w.binPath.Text()}
