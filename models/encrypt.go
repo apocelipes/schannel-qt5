@@ -2,8 +2,8 @@ package models
 
 import (
 	"bytes"
+	"crypto/aes"
 	"crypto/cipher"
-	"crypto/des"
 	"crypto/md5"
 )
 
@@ -12,13 +12,13 @@ func genKey(user string) []byte {
 	salt := user[:len(user)/2] + "models"
 	data := salt[:len(salt)/2] + user + salt[len(salt)/2:]
 	hash := md5.New()
-	return hash.Sum([]byte(data))[:des.BlockSize]
+	return hash.Sum([]byte(data))[:aes.BlockSize]
 }
 
 // encryptPassword 加密用户名密码，返回加密后的数据
 func encryptPassword(user string, password []byte) ([]byte, error) {
 	key := genKey(user)
-	block, err := des.NewCipher(key)
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func encryptPassword(user string, password []byte) ([]byte, error) {
 // decryptPassword 返回解密后的信息
 func decryptPassword(user string, crypted []byte) ([]byte, error) {
 	key := genKey(user)
-	block, err := des.NewCipher(key)
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
