@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/md5"
+	"crypto/sha256"
+	"encoding/base64"
 )
 
 // genKey 根据用户名生成key
 func genKey(user string) []byte {
 	salt := user[:len(user)/2] + "models"
 	data := salt[:len(salt)/2] + user + salt[len(salt)/2:]
-	hash := md5.New()
+	hash := sha256.New()
 	return hash.Sum([]byte(data))[:aes.BlockSize]
 }
 
@@ -27,7 +28,9 @@ func encryptPassword(user string, password []byte) ([]byte, error) {
 	blockMode := cipher.NewCBCEncrypter(block, key)
 	crypted := make([]byte, len(origData))
 	blockMode.CryptBlocks(crypted, origData)
-	return crypted, nil
+	base := make([]byte, base64.StdEncoding.EncodedLen(len(crypted)))
+	base64.StdEncoding.Encode(base, crypted)
+	return base, nil
 }
 
 // decryptPassword 返回解密后的信息
@@ -39,8 +42,14 @@ func decryptPassword(user string, crypted []byte) ([]byte, error) {
 	}
 
 	blockMode := cipher.NewCBCDecrypter(block, key)
-	origData := make([]byte, len(crypted))
-	blockMode.CryptBlocks(origData, crypted)
+	unbase := make([]byte, base64.StdEncoding.DecodedLen(len(crypted)))
+	n, err := base64.StdEncoding.Decode(unbase, crypted)
+	if err != nil {
+		return nil, err
+	}
+
+	origData := make([]byte, n)
+	blockMode.CryptBlocks(origData, unbase[:n])
 	origData = PKCS5UnPadding(origData)
 	return origData, nil
 }
