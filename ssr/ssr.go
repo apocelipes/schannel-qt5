@@ -20,24 +20,47 @@ type Launcher interface {
 // LauncherMaker 生成Launcher的工厂函数
 type LauncherMaker func(*config.UserConfig) Launcher
 
-// 保存注册的LauncherMaker
-var launchers = make(map[string]LauncherMaker)
+var (
+	// 保存注册的LauncherMaker
+	launchers = make(map[string]LauncherMaker)
+	// ssr config注册获取
+	configs = make(map[string]config.ClientConfigMaker)
+)
 
 // SetLuancherMaker 注册Launcher生成器
-func SetLuancherMaker(name string, l LauncherMaker) {
-	if name == "" || l == nil {
+func SetLuancherMaker(name string, maker LauncherMaker) {
+	if name == "" || maker == nil {
 		panic("SetLauncher error: wrong name or LuancherMaker")
 	}
 
-	launchers[name] = l
+	launchers[name] = maker
+}
+
+// SetClientConfigMaker 注册ClientConfig生成器
+func SetClientConfigMaker(name string, maker config.ClientConfigMaker) {
+	if name == "" || maker == nil {
+		panic("SetClientConfigMaker error: wrong name or ClientConfigMaker")
+	}
+
+	configs[name] = maker
 }
 
 // NewLauncher 返回由name指定的Launcher生成器使用config.UserConfig生成的Launcher
 func NewLauncher(name string, conf *config.UserConfig) Launcher {
-	l, ok := launchers[name]
+	maker, ok := launchers[name]
 	if !ok {
 		return nil
 	}
 
-	return l(conf)
+	return maker(conf)
+}
+
+// NewClientConfig 根据名字返回默认值的ClientConfig
+func NewClientConfig(name string) config.ClientConfig {
+	maker, ok := configs[name]
+	if !ok {
+		return nil
+	}
+
+	return maker()
 }

@@ -2,8 +2,12 @@ package pyclient
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
+	"regexp"
+	"schannel-qt5/config"
+	"strconv"
 )
 
 // ClientConfig pyssrclient的本地配置
@@ -17,6 +21,7 @@ type ClientConfig struct {
 	PidFile string `json:"pid-file,omitempty"`
 }
 
+// 实现ClientConfigGetter
 func (c *ClientConfig) LocalPort() string {
 	if c.Port == "" {
 		return "1080"
@@ -77,6 +82,41 @@ func (c *ClientConfig) Store(path string) error {
 	}
 	f.Write(data)
 
+	return nil
+}
+
+// 实现ClientConfigSetter
+func (c *ClientConfig) SetLocalPort(port string) error {
+	_, err := strconv.Atoi(port)
+	if err != nil {
+		return err
+	}
+
+	c.Port = port
+	return nil
+}
+
+func (c *ClientConfig) SetFastOpen(isFOP bool) {
+	c.IsFastOpen = isFOP
+}
+
+func (c *ClientConfig) SetPidFilePath(path string) error {
+	jpath := config.JSONPath{Data: path}
+	if _, err := jpath.AbsPath(); err != nil {
+		return err
+	}
+
+	c.PidFile = path
+	return nil
+}
+
+func (c *ClientConfig) SetLocalAddr(addr string) error {
+	IP := regexp.MustCompile(`^((25[0-5]|2[0-4]\d|[1]{1}\d{1}\d{1}|[1-9]{1}\d{1}|\d{1})($|(?!\.$)\.)){4}$`)
+	if !IP.MatchString(addr) {
+		return errors.New("not a valid ip addr")
+	}
+
+	c.Addr = addr
 	return nil
 }
 
