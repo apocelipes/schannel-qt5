@@ -5,8 +5,7 @@ import (
 )
 
 type User struct {
-	ID     uint   `gorm:"type:int unsigned;auto_increment;primary_key"`
-	Name   string `gorm:"type:varchar(255);not null;unique"`
+	Name   string `gorm:"type:varchar(255);not null;unique;primary_key"`
 	Passwd []byte `gorm:"type:blob"`
 }
 
