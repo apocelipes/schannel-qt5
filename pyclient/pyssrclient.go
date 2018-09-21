@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"os/exec"
 	"schannel-qt5/urls"
-	"strings"
 	"time"
 
 	"schannel-qt5/config"
@@ -43,7 +42,7 @@ func newPySSRClient(c *config.UserConfig) ssr.Launcher {
 	p.conf = c.SSRClientConfig
 
 	// -c ssr_node_config_file
-	p.binArgs = make([]string, 0)
+	p.binArgs = []string{"python", p.bin}
 	p.binArgs = append(p.binArgs, "-c", nodeConfigFile)
 	p.binArgs = append(p.binArgs, p.conf.(*ClientConfig).GenArgs()...)
 
@@ -53,22 +52,28 @@ func newPySSRClient(c *config.UserConfig) ssr.Launcher {
 // Start 启动客户端
 func (p *PySSRClient) Start() error {
 	// 使用pkexec在gui程序中请求权限
-	args := strings.Join(p.binArgs, " ")
-	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "start")
+	args := make([]string, len(p.binArgs))
+	copy(args, p.binArgs)
+	args = append(args, "-d", "start")
+	cmd := exec.Command("pkexec", args...)
 	return cmd.Run()
 }
 
 // Restart 重新启动客户端
 func (p *PySSRClient) Restart() error {
-	args := strings.Join(p.binArgs, " ")
-	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "restart")
+	args := make([]string, len(p.binArgs))
+	copy(args, p.binArgs)
+	args = append(args, "-d", "restart")
+	cmd := exec.Command("pkexec", args...)
 	return cmd.Run()
 }
 
 // Stop 停止客户端
 func (p *PySSRClient) Stop() error {
-	args := strings.Join(p.binArgs, " ")
-	cmd := exec.Command("pkexec", "python", p.bin, args, "-d", "stop")
+	args := make([]string, len(p.binArgs))
+	copy(args, p.binArgs)
+	args = append(args, "-d", "stop")
+	cmd := exec.Command("pkexec", args...)
 	return cmd.Run()
 }
 

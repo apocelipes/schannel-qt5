@@ -10,6 +10,12 @@ import (
 	"strconv"
 )
 
+var (
+	defaultPidFile = "/tmp/ssr_pyclient.pid"
+	defaultPort    = "1080"
+	defaultAddr    = "127.0.0.1"
+)
+
 // ClientConfig pyssrclient的本地配置
 type ClientConfig struct {
 	// 本地端口和ip(default: 127.0.0.1:1080)
@@ -24,7 +30,7 @@ type ClientConfig struct {
 // 实现ClientConfigGetter
 func (c *ClientConfig) LocalPort() string {
 	if c.Port == "" {
-		return "1080"
+		return defaultPort
 	}
 
 	return c.Port
@@ -32,7 +38,7 @@ func (c *ClientConfig) LocalPort() string {
 
 func (c *ClientConfig) LocalAddr() string {
 	if c.Addr == "" {
-		return "127.0.0.1"
+		return defaultAddr
 	}
 
 	return c.Addr
@@ -44,7 +50,7 @@ func (c *ClientConfig) FastOpen() bool {
 
 func (c *ClientConfig) PidFilePath() string {
 	if c.PidFile == "" {
-		return "/tmp/ssr_pyclient.pid"
+		return defaultPidFile
 	}
 
 	return c.PidFile
@@ -87,9 +93,11 @@ func (c *ClientConfig) Store(path string) error {
 
 // 实现ClientConfigSetter
 func (c *ClientConfig) SetLocalPort(port string) error {
-	_, err := strconv.Atoi(port)
+	i, err := strconv.Atoi(port)
 	if err != nil {
 		return err
+	} else if i > 65535 {
+		return errors.New("port over range")
 	}
 
 	c.Port = port
@@ -110,8 +118,10 @@ func (c *ClientConfig) SetPidFilePath(path string) error {
 	return nil
 }
 
+// SetLocalAddr 检查并设置要bind的本地ip
+// 暂时只支持IPv4
 func (c *ClientConfig) SetLocalAddr(addr string) error {
-	IP := regexp.MustCompile(`^((25[0-5]|2[0-4]\d|[1]{1}\d{1}\d{1}|[1-9]{1}\d{1}|\d{1})($|(?!\.$)\.)){4}$`)
+	IP := regexp.MustCompile(`^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`)
 	if !IP.MatchString(addr) {
 		return errors.New("not a valid ip addr")
 	}
@@ -124,7 +134,7 @@ func (c *ClientConfig) GenArgs() []string {
 	args := make([]string, 0)
 	args = append(args, "-b", c.LocalAddr())
 	args = append(args, "-l", c.LocalPort())
-	args = append(args, "--pid-file ", c.PidFilePath())
+	args = append(args, "--pid-file", c.PidFilePath())
 	if c.IsFastOpen {
 		args = append(args, "--fast-open")
 	}
