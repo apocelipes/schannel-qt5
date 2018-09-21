@@ -1,0 +1,6 @@
+{
+  "local_addr": "172.17.0.1",
+  "local_port": "1080",
+  "fast-open": true,
+  "pid-file": "/tmp/test.pid"
+}

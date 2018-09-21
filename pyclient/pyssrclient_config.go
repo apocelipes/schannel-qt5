@@ -82,7 +82,8 @@ func (c *ClientConfig) Store(path string) error {
 	}
 	defer f.Close()
 
-	data, err := json.Marshal(c)
+	// 格式化成易于阅读的形式
+	data, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		return err
 	}

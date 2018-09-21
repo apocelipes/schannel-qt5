@@ -1,6 +1,9 @@
 package pyclient
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -136,6 +139,100 @@ func TestClientConfigGenArgs(t *testing.T) {
 		args := v.c.GenArgs()
 		if strings.Join(args, " ") != v.args {
 			t.Errorf("genargs failed:\nArgs: %v\n", args)
+		}
+	}
+}
+
+func TestClientConfigLoad(t *testing.T) {
+	testData := []*struct {
+		file   string
+		sample ClientConfig
+	}{
+		{
+			file: "testdata/test_config.json",
+			sample: ClientConfig{
+				Addr:       "172.17.0.1",
+				Port:       "1080",
+				IsFastOpen: true,
+				PidFile:    "/tmp/test.pid",
+			},
+		},
+		{
+			file: "testdata/test_empty.json",
+			sample: ClientConfig{
+				Addr:       "",
+				Port:       "",
+				IsFastOpen: false,
+				PidFile:    "",
+			},
+		},
+		{
+			file: "testdata/test_default.json",
+			sample: ClientConfig{
+				Addr:       "",
+				Port:       "1081",
+				IsFastOpen: true,
+				PidFile:    "",
+			},
+		},
+	}
+
+	for _, v := range testData {
+		f, err := os.Open(v.file)
+		if err != nil {
+			t.Error(err)
+		}
+
+		data, err := ioutil.ReadAll(f)
+		if err != nil {
+			t.Error(err)
+		}
+		f.Close()
+
+		conf := ClientConfig{}
+		err = json.Unmarshal(data, &conf)
+		if err != nil {
+			t.Errorf("load failed: %v\n", err)
+		}
+
+		if conf != v.sample {
+			t.Errorf("load failed:\n\thave: %v\n\twant: %v\n", conf, v.sample)
+		}
+	}
+}
+
+func TestClientConfigStore(t *testing.T) {
+	testData := []*struct {
+		file string
+		conf *ClientConfig
+	}{
+		{
+			file: "/tmp/empty_config.json",
+			conf: &ClientConfig{},
+		},
+		{
+			file: "/tmp/default_config.json",
+			conf: &ClientConfig{
+				Addr:       "",
+				Port:       "1081",
+				IsFastOpen: true,
+				PidFile:    "",
+			},
+		},
+		{
+			file: "/tmp/full_config.json",
+			conf: &ClientConfig{
+				Addr:       "172.12.0.1",
+				Port:       "1080",
+				IsFastOpen: true,
+				PidFile:    "/tmp/test.pid",
+			},
+		},
+	}
+
+	for _, v := range testData {
+		if err := v.conf.Store(v.file); err != nil {
+			t.Errorf("store failed: %v\n", err)
 		}
 	}
 }
