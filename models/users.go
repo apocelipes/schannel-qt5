@@ -1,19 +1,22 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"github.com/go-xorm/xorm"
 )
 
+// User 用户表，将和使用量表关联
 type User struct {
-	Name   string `gorm:"type:varchar(255);not null;unique;primary_key"`
-	Passwd []byte `gorm:"type:blob"`
+	Name   string `xorm:"pk"`
+	Passwd []byte `xorm:"blob"`
 }
 
 // GetUserPassword 获取用户名以及密码
-func GetUserPassword(db *gorm.DB, user string) (*User, error) {
+func GetUserPassword(db *xorm.Engine, user string) (*User, error) {
 	u := User{Name: user}
-	if err := db.Where(&u).First(&u).Error; err != nil {
+	if has, err := db.Get(&u); err != nil {
 		return nil, err
+	} else if !has {
+		return nil, xorm.ErrNotExist
 	}
 
 	// 密码解密
@@ -30,8 +33,8 @@ func GetUserPassword(db *gorm.DB, user string) (*User, error) {
 
 // SetUserPassword 将用户名密码保存
 // password为nil表示不记住密码
-func SetUserPassword(db *gorm.DB, user string, password []byte) error {
-	u := User{
+func SetUserPassword(db *xorm.Engine, user string, password []byte) error {
+	u := &User{
 		Name:   user,
 		Passwd: password,
 	}
@@ -44,13 +47,14 @@ func SetUserPassword(db *gorm.DB, user string, password []byte) error {
 		u.Passwd = data
 	}
 
-	tmp := User{}
-	if err := db.Where("name = ?", u.Name).First(&tmp).Error; err == nil {
-		db.Model(&u).Update(&u)
+	if has, err := db.Exist(&User{Name: u.Name}); err != nil {
+		return err
+	} else if has {
+		db.Where("name = ?", u.Name).Cols("passwd").Update(u)
 		return nil
 	}
 
-	if err := db.Create(&u).Error; err != nil {
+	if _, err := db.InsertOne(u); err != nil {
 		return err
 	}
 
@@ -58,9 +62,9 @@ func SetUserPassword(db *gorm.DB, user string, password []byte) error {
 }
 
 // GetAllUsers 返回所有user，包括未
-func GetAllUsers(db *gorm.DB) ([]*User, error) {
+func GetAllUsers(db *xorm.Engine) ([]*User, error) {
 	users := make([]*User, 0)
-	if err := db.Find(&users).Error; err != nil {
+	if err := db.Find(&users); err != nil {
 		return nil, err
 	}
 

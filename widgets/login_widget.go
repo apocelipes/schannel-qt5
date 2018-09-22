@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jinzhu/gorm"
+	"github.com/go-xorm/xorm"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
@@ -12,6 +12,7 @@ import (
 	"schannel-qt5/models"
 )
 
+// LoginWidget 登录界面
 type LoginWidget struct {
 	widgets.QWidget
 
@@ -26,10 +27,11 @@ type LoginWidget struct {
 	remember    *widgets.QCheckBox
 	conf        *config.UserConfig
 	logger      *log.Logger
-	db          *gorm.DB
+	db          *xorm.Engine
 }
 
-func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db *gorm.DB) *LoginWidget {
+// NewLoginWidget2 根据config，logger，db生成登录控件
+func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db *xorm.Engine) *LoginWidget {
 	if conf == nil || logger == nil {
 		return nil
 	}
@@ -57,6 +59,7 @@ func (l *LoginWidget) InitUI() {
 		names = append(names, v.Name)
 	}
 	l.username.AddItems(names)
+	// 实现记住用户密码
 	l.username.ConnectCurrentTextChanged(l.setPassword)
 
 	userLabel.SetBuddy(l.username)
@@ -133,6 +136,7 @@ func (l *LoginWidget) loginFailed() {
 	}
 }
 
+// setPassword 将密码不为null的用户显示
 func (l *LoginWidget) setPassword(user string) {
 	info, err := models.GetUserPassword(l.db, user)
 	if err != nil {
