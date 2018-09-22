@@ -8,33 +8,40 @@ import (
 )
 
 func TestAbsPath(t *testing.T) {
-	p1 := JSONPath{"/testing/abs/path"}
-
-	data1, err := p1.AbsPath()
-	if data1 != p1.Data {
+	// 测试绝对路径
+	abs := JSONPath{"/testing/abs/path"}
+	data1, err := abs.AbsPath()
+	if data1 != abs.Data {
 		t.Error("wrong on abs path: " + data1)
 	} else if err != nil {
 		t.Error(err)
 	}
 
+	// 测试~开头的HOME下路径
 	err = os.Setenv("HOME", "/home/testing")
 	if err != nil {
 		t.Errorf("set $HOME ERROR: %v\n", err)
 	}
 
-	p2 := JSONPath{"~/testing/path"}
-
-	data2, err := p2.AbsPath()
+	underHome := JSONPath{"~/testing/path"}
+	data2, err := underHome.AbsPath()
 	if data2 != "/home/testing/testing/path" {
 		t.Error("wrong on home path: " + data2)
 	} else if err != nil {
 		t.Error(err)
 	}
 
-	p3 := JSONPath{"testing/path"}
-	_, err = p3.AbsPath()
+	// 测试非绝对路径
+	notAbs := JSONPath{"testing/path"}
+	_, err = notAbs.AbsPath()
 	if err == nil {
 		t.Error("ErrNotAbs didn't work")
+	}
+
+	empty := JSONPath{""}
+	_, err = empty.AbsPath()
+	if err == nil {
+		t.Error("empty string passed")
 	}
 }
 
@@ -45,6 +52,7 @@ type p struct {
 }
 
 func TestUnmarshalJson(t *testing.T) {
+	// 测试json数据
 	data := "{\"port\":12345,\"path\":\"~/.test/\"}"
 
 	j := new(p)
@@ -59,9 +67,10 @@ func TestUnmarshalJson(t *testing.T) {
 }
 
 func TestMarshalJson(t *testing.T) {
-	j := new(p)
-	j.Port = 12345
-	j.Path.Data = "~/.test/"
+	j := &p{
+		Port: 12345,
+		Path: JSONPath{Data: "~/.test/"},
+	}
 	data, err := json.Marshal(j)
 	if err != nil {
 		t.Error(err)

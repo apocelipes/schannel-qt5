@@ -10,28 +10,58 @@ import (
 )
 
 func TestGetTotal(t *testing.T) {
-	data := `使用报表 (流量：50GB)`
-	res := getTotal.FindStringSubmatch(data)
-	if res[1] != "50GB" {
-		t.Error("regexp getTotal has some problem.")
+	testData := []*struct {
+		data string
+		// parse得到的值
+		res string
+	}{
+		{
+			data: `使用报表 (流量：50GB)`,
+			res:  "50GB",
+		},
+		{
+			data: `使用报表 (流量：25.25GB)`,
+			res:  "25.25GB",
+		},
+	}
+
+	for _, v := range testData {
+		res := getTotal.FindStringSubmatch(v.data)[1]
+		if res != v.res {
+			t.Errorf("regexp getTotal failed: %v\n\twant: %v\n\thave: %v\n", v, v.res, res)
+		}
 	}
 }
 
 func TestGetDataInfo(t *testing.T) {
-	data1 := `已使用 (16.14GB)`
-	data2 := `上传 (14.66MB)`
-	data3 := `下载 (16.12GB)`
-
-	if getDataInfo.FindStringSubmatch(data1)[1] != "16.14GB" {
-		t.Error("regexp getDataInfo has some problem on getting used.")
+	testData := []*struct {
+		data string
+		// parse得到的值
+		res string
+	}{
+		{
+			data: `已使用 (16.14GB)`,
+			res:  "16.14GB",
+		},
+		{
+			data: `上传 (14.66MB)`,
+			res:  "14.66MB",
+		},
+		{
+			data: `下载 (16.12GB)`,
+			res:  "16.12GB",
+		},
+		{
+			data: `下载 (5.74KB)`,
+			res:  "5.74KB",
+		},
 	}
 
-	if getDataInfo.FindStringSubmatch(data2)[1] != "14.66MB" {
-		t.Error("regexp getDataInfo has some problem on getting upload.")
-	}
-
-	if getDataInfo.FindStringSubmatch(data3)[1] != "16.12GB" {
-		t.Error("regexp getDataInfo has some problem on getting download.")
+	for _, v := range testData {
+		res := getDataInfo.FindStringSubmatch(v.data)[1]
+		if res != v.res {
+			t.Errorf("regexp getDataInfo failed: %s\n\twant: %s\n\thave: %s\n", v.data, v.res, res)
+		}
 	}
 }
 

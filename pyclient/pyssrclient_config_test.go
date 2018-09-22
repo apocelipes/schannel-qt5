@@ -1,9 +1,6 @@
 package pyclient
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 )
@@ -50,6 +47,7 @@ func TestClientConfigSetLocalPort(t *testing.T) {
 func TestClientConfigSetFastOpen(t *testing.T) {
 	conf := &ClientConfig{}
 
+	// fast-open只有两种值，分别进行测试
 	conf.SetFastOpen(true)
 	if !conf.FastOpen() {
 		t.Errorf("set fast-open failed")
@@ -103,7 +101,9 @@ func TestClientConfigSetPidFilePath(t *testing.T) {
 
 func TestClientConfigGenArgs(t *testing.T) {
 	testData := []*struct {
-		c    *ClientConfig
+		// config对象
+		c *ClientConfig
+		// 生成的args组合，通过join组合
 		args string
 	}{
 		{
@@ -145,7 +145,9 @@ func TestClientConfigGenArgs(t *testing.T) {
 
 func TestClientConfigLoad(t *testing.T) {
 	testData := []*struct {
-		file   string
+		// load文件路径
+		file string
+		// 与load后的config对象进行比较
 		sample ClientConfig
 	}{
 		{
@@ -178,21 +180,10 @@ func TestClientConfigLoad(t *testing.T) {
 	}
 
 	for _, v := range testData {
-		f, err := os.Open(v.file)
-		if err != nil {
-			t.Error(err)
-		}
-
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			t.Error(err)
-		}
-		f.Close()
-
 		conf := ClientConfig{}
-		err = json.Unmarshal(data, &conf)
+		err := conf.Load(v.file)
 		if err != nil {
-			t.Errorf("load failed: %v\n", err)
+			t.Error(err)
 		}
 
 		if conf != v.sample {

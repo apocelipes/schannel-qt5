@@ -9,7 +9,7 @@ import (
 
 const (
 	// 默认配置文件路径
-	configPath = ".local/share/schanclient.json"
+	configPath = ".local/share/schannel-qt5.json"
 )
 
 var (

@@ -8,6 +8,7 @@ import (
 )
 
 func TestConfigPath(t *testing.T) {
+	// 设置HOME用于拼接测试
 	err := os.Setenv("HOME", "/home/testing")
 	if err != nil {
 		t.Errorf("set $HOME ERROR: %v\n", err)
@@ -15,7 +16,7 @@ func TestConfigPath(t *testing.T) {
 
 	if path, err := ConfigPath(); err != nil {
 		t.Errorf("ConfigPath return an ERROR: %v\n", err)
-	} else if path != "/home/testing/.local/share/schanclient.json" {
+	} else if path != "/home/testing/" + configPath {
 		t.Errorf("wrong path: %v", path)
 	}
 }
@@ -35,7 +36,8 @@ func TestMarshalUserConf(t *testing.T) {
 
 func TestUnmarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
-	data := `{"ssr_config_path":"/tmp/testing/t.json","ssr_bin":"/tmp/testing/a.out","log_file":"/tmp/a.log"}`
+	// 需要解析成config的原始数据
+	data := `{"ssr_node_config_path":"/tmp/t.json","ssr_bin":"/tmp/a.out","log_file":"/tmp/a.log","ssr_client_config_path":"/tmp/c.json"}`
 	if err := json.Unmarshal([]byte(data), u); err != nil {
 		t.Error(err)
 	}
