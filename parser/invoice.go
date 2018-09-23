@@ -44,10 +44,15 @@ func (i *Invoice) GetStatus() (string, bool) {
 		flag = true
 	}
 
-	current := time.Now().Round(24 * time.Hour)
+	current := getCurrentDay()
 	if current.After(i.ExpireDate) {
 		msg += "，账单过期"
 	}
 
 	return msg, flag
+}
+
+// getCurrentDay 返回当前的时间，精确到day
+func getCurrentDay() time.Time {
+	return time.Now().Truncate(24 * time.Hour).Local()
 }
