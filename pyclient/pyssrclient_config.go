@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"schannel-qt5/config"
+	"schannel-qt5/ssr"
 	"strconv"
 )
 
@@ -25,6 +26,16 @@ type ClientConfig struct {
 	IsFastOpen bool `json:"fast-open,omitempty"`
 	// pidfile存放位置(default: /tmp/ssr_client.pid)
 	PidFile string `json:"pid-file,omitempty"`
+}
+
+func init() {
+	// 注册到config生成器
+	ssr.SetClientConfigMaker("python", config.ClientConfigMaker(newClientConfig))
+}
+
+// newClientConfig 生成config对象
+func newClientConfig() config.ClientConfig {
+	return &ClientConfig{}
 }
 
 // 实现ClientConfigGetter
@@ -93,6 +104,7 @@ func (c *ClientConfig) Store(path string) error {
 }
 
 // 实现ClientConfigSetter
+// SetLocalPort 设置本地端口，端口不能大于65535
 func (c *ClientConfig) SetLocalPort(port string) error {
 	i, err := strconv.Atoi(port)
 	if err != nil {
@@ -109,6 +121,7 @@ func (c *ClientConfig) SetFastOpen(isFOP bool) {
 	c.IsFastOpen = isFOP
 }
 
+// SetPidFilePath 设置pidfile存放路径，需要为绝对路径
 func (c *ClientConfig) SetPidFilePath(path string) error {
 	jpath := config.JSONPath{Data: path}
 	if _, err := jpath.AbsPath(); err != nil {
@@ -131,6 +144,7 @@ func (c *ClientConfig) SetLocalAddr(addr string) error {
 	return nil
 }
 
+// GenArgs 根据config对象生成命令行参数选项
 func (c *ClientConfig) GenArgs() []string {
 	args := make([]string, 0)
 	args = append(args, "-b", c.LocalAddr())
