@@ -54,5 +54,6 @@ func (i *Invoice) GetStatus() (string, bool) {
 
 // getCurrentDay 返回当前的时间，精确到day
 func getCurrentDay() time.Time {
-	return time.Now().Truncate(24 * time.Hour).Local()
+	// Now和Truncate已经使用location处理过time
+	return time.Now().Truncate(24 * time.Hour)
 }
