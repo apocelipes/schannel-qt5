@@ -1,6 +1,9 @@
 package models
 
 import (
+	"bytes"
+	"errors"
+
 	"github.com/go-xorm/xorm"
 )
 
@@ -50,6 +53,12 @@ func SetUserPassword(db *xorm.Engine, user string, password []byte) error {
 	if has, err := db.Exist(&User{Name: u.Name}); err != nil {
 		return err
 	} else if has {
+		old := &User{Name: u.Name}
+		db.Get(&old)
+		// 和旧值一样，不更新，返回error
+		if bytes.Equal(u.Passwd, old.Passwd) {
+			return errors.New("insert same values")
+		}
 		db.Where("name = ?", u.Name).Cols("passwd").Update(u)
 		return nil
 	}
@@ -69,4 +78,15 @@ func GetAllUsers(db *xorm.Engine) ([]*User, error) {
 	}
 
 	return users, nil
+}
+
+// DelPassword 将指定user的password设置为null
+func DelPassword(db *xorm.Engine, user string) error {
+	u := &User{Name: user}
+	_, err := db.Where("name = ?", user).Cols("passwd").Update(u)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

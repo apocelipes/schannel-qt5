@@ -25,6 +25,7 @@ type LoginWidget struct {
 	password    *widgets.QLineEdit
 	loginStatus *ColorLabel
 	remember    *widgets.QCheckBox
+	// 用户数据
 	conf        *config.UserConfig
 	logger      *log.Logger
 	db          *xorm.Engine
@@ -122,6 +123,14 @@ func (l *LoginWidget) checkLogin(_ bool) {
 		if err := models.SetUserPassword(l.db, user, []byte(passwd)); err != nil {
 			l.logger.Println(err)
 		}
+	} else {
+		if has, err := l.db.Where("password is not null").Exist(&models.User{Name: user}); err != nil {
+			l.logger.Println(err)
+		} else if has {
+			if err := models.DelPassword(l.db, user); err != nil {
+				l.logger.Printf("delete %v password failed: %v\n", user, err)
+			}
+		}
 	}
 
 	// 传递登录信息
@@ -140,12 +149,16 @@ func (l *LoginWidget) loginFailed() {
 func (l *LoginWidget) setPassword(user string) {
 	info, err := models.GetUserPassword(l.db, user)
 	if err != nil {
+		// 输入的用户名未记录
 		l.logger.Println(err)
 		l.username.SetCurrentText(user)
-		l.password.SetText("")
-		return
 	} else if info.Passwd != nil {
 		l.password.SetText(string(info.Passwd))
+		l.remember.SetChecked(true)
 		return
 	}
+
+	// 记录了用户但是没记录密码
+	l.password.SetText("")
+	l.remember.SetChecked(false)
 }

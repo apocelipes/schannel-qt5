@@ -19,6 +19,10 @@ func TestEncryptDecrypt(t *testing.T) {
 			user:     "用户A1@",
 			password: "worldHello17.,",
 		},
+		{
+			user:     "sample1",
+			password: string(genPassword()),
+		},
 	}
 
 	for _, v := range testData {
