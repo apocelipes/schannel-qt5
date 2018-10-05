@@ -1,12 +1,12 @@
 package widgets
 
 import (
-	"errors"
-	"github.com/therecipe/qt/widgets"
-	"schannel-qt5/config"
-	"schannel-qt5/pyclient"
 	"sort"
 	"strings"
+
+	"github.com/therecipe/qt/widgets"
+
+	"schannel-qt5/config"
 )
 
 var (
@@ -36,6 +36,8 @@ type ConfigWidget struct {
 	proxyType *widgets.QComboBox
 	proxyBox  *widgets.QGroupBox
 	proxyMsg  *ColorLabel
+	// ssr client设置
+	ssrClientConfigWidget *SSRConfigWidget
 
 	// 配置数据和接口
 	conf *config.UserConfig
@@ -43,7 +45,7 @@ type ConfigWidget struct {
 
 // NewConfigWidget2 根据conf生成ConfigWidget
 func NewConfigWidget2(conf *config.UserConfig) *ConfigWidget {
-	if conf == nil {
+	if conf == nil || conf.SSRClientConfig == nil {
 		return nil
 	}
 	widget := NewConfigWidget(nil, 0)
@@ -139,6 +141,8 @@ func (w *ConfigWidget) InitUI() {
 		w.proxyBox.SetChecked(false)
 	}
 
+	w.ssrClientConfigWidget = NewSSRConfigWidget2(w.conf.SSRClientConfig)
+
 	typeLayout := widgets.NewQHBoxLayout()
 	typeLayout.AddWidget(typeLabel, 0, 0)
 	typeLayout.AddWidget(w.proxyType, 0, 0)
@@ -155,10 +159,15 @@ func (w *ConfigWidget) InitUI() {
 	saveButton := widgets.NewQPushButton2("保存", nil)
 	saveButton.ConnectClicked(w.saveConfig)
 
+	leftLayout := widgets.NewQVBoxLayout()
+	leftLayout.AddWidget(userBox, 0, 0)
+	leftLayout.AddWidget(ssrBox, 0, 0)
+	leftLayout.AddWidget(w.proxyBox, 0, 0)
+	topLayout := widgets.NewQHBoxLayout()
+	topLayout.AddLayout(leftLayout, 0)
+	topLayout.AddWidget(w.ssrClientConfigWidget, 0, 0)
 	mainLayout := widgets.NewQVBoxLayout()
-	mainLayout.AddWidget(userBox, 0, 0)
-	mainLayout.AddWidget(ssrBox, 0, 0)
-	mainLayout.AddWidget(w.proxyBox, 0, 0)
+	mainLayout.AddLayout(topLayout, 0)
 	mainLayout.AddWidget(saveButton, 0, 0)
 	w.SetLayout(mainLayout)
 }
@@ -207,17 +216,19 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 		flag = true
 	}
 
+	// 更新ssr client config
+	err = w.ssrClientConfigWidget.UpdateSSRClientConfig()
+	if err != nil {
+		flag = true
+	}
+
 	if flag {
 		return
 	}
 
 	conf := w.getConfig()
-	if conf == nil {
-		errorMsg := widgets.NewQErrorMessage(nil)
-		errorMsg.ShowMessage("获取ssr_client配置出错: " + w.conf.SSRClientConfigPath.String())
-		errorMsg.Exec()
-		return
-	}
+	// ssr client conf被直接更新
+	conf.SSRClientConfig = w.conf.SSRClientConfig
 
 	w.conf = conf
 	if err := w.conf.StoreConfig(); err != nil {
@@ -231,20 +242,6 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 	w.ConfigChanged(w.conf)
 }
 
-// showErrorMsg 控制error label的显示
-// err为nil则代表没有错误发生，如果label可见则设为隐藏
-// err不为nil时设置label可见
-// 设置label可见时返回true，否则返回false（不受label原有状态影响）
-func showErrorMsg(label *ColorLabel, err error) bool {
-	if err != nil {
-		label.Show()
-		return true
-	}
-
-	label.Hide()
-	return false
-}
-
 // getConfig 根据设置信息生成新的config对象
 func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf := &config.UserConfig{}
@@ -253,10 +250,6 @@ func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf.SSRBin = config.JSONPath{Data: w.binPath.Text()}
 	conf.Proxy = config.JSONProxy{Data: w.GetProxyUrl()}
 	conf.SSRClientConfigPath = config.JSONPath{Data: w.ssrConfigPath.Text()}
-	conf.SSRClientConfig = &pyclient.ClientConfig{}
-	if err := conf.SSRClientConfig.Load(conf.SSRClientConfigPath.String()); err != nil {
-		return nil
-	}
 
 	return conf
 }
@@ -273,7 +266,8 @@ func (w *ConfigWidget) GetProxyUrl() string {
 
 // validProxy 验证proxy URL是否合法
 func (w *ConfigWidget) validProxy() error {
-	p := config.JSONProxy{Data: w.GetProxyUrl()}
+	url := w.GetProxyUrl()
+	p := config.JSONProxy{Data: url}
 	if !p.IsURL() && p.String() != "" {
 		return config.ErrNotURL
 	}
@@ -284,52 +278,23 @@ func (w *ConfigWidget) validProxy() error {
 // validLogFile 验证日志文件保存路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validLogFile() error {
 	text := w.logFile.Text()
-	jpath := config.JSONPath{Data: text}
-	if _, err := jpath.AbsPath(); err != nil {
-		return err
-	} else if text[len(text)-1] == '/' {
-		// 防止输入的是目录（不能防止只输入目录名的情况）
-		return errors.New("dir is not allowed")
-	}
-
-	return nil
+	return checkPath(text)
 }
 
 // validNodeConfigPath 验证ssr配置文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validNodeConfigPath() error {
 	text := w.nodeConfigPath.Text()
-	jpath := config.JSONPath{Data: text}
-	if _, err := jpath.AbsPath(); err != nil {
-		return err
-	} else if text[len(text)-1] == '/' {
-		return errors.New("dir is not allowed")
-	}
-
-	return nil
+	return checkPath(text)
 }
 
 // validBinPath 验证ssr可执行文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validBinPath() error {
 	text := w.binPath.Text()
-	jpath := config.JSONPath{Data: text}
-	if _, err := jpath.AbsPath(); err != nil {
-		return err
-	} else if text[len(text)-1] == '/' {
-		return errors.New("dir is not allowed")
-	}
-
-	return nil
+	return checkPath(text)
 }
 
 // validSSRConfigPath 验证ssr可执行文件路径是否在$HOME下或者是绝对路径
 func (w *ConfigWidget) validSSRConfigPath() error {
 	text := w.ssrConfigPath.Text()
-	jpath := config.JSONPath{Data: text}
-	if _, err := jpath.AbsPath(); err != nil {
-		return err
-	} else if text[len(text)-1] == '/' {
-		return errors.New("dir is not allowed")
-	}
-
-	return nil
+	return checkPath(text)
 }
