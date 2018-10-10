@@ -1,8 +1,9 @@
 package ssr
 
 import (
-	"schannel-qt5/config"
 	"time"
+
+	"schannel-qt5/config"
 )
 
 // Launcher 用于控制ssr客户端

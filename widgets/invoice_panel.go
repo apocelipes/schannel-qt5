@@ -1,9 +1,11 @@
 package widgets
 
 import (
-	"github.com/therecipe/qt/widgets"
-	"schannel-qt5/parser"
 	"sort"
+
+	"github.com/therecipe/qt/widgets"
+
+	"schannel-qt5/parser"
 )
 
 // InvoicePanel 显示账单状态

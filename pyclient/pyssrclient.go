@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"net/url"
 	"os/exec"
-	"schannel-qt5/urls"
 	"time"
 
 	"schannel-qt5/config"
 	"schannel-qt5/ssr"
+	"schannel-qt5/urls"
 )
 
 // PySSRClient 调用Python实现的ssr客户端

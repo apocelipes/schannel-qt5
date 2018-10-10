@@ -1,11 +1,12 @@
 package models
 
 import (
+	"testing"
+
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"os"
-	"testing"
 
 	"github.com/go-xorm/xorm"
 	_ "github.com/mattn/go-sqlite3"

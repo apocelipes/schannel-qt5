@@ -1,10 +1,12 @@
 package pyclient
 
 import (
-	"os"
-	"schannel-qt5/config"
 	"testing"
+
+	"os"
 	"time"
+
+	"schannel-qt5/config"
 )
 
 var (

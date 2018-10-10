@@ -2,9 +2,11 @@ package widgets
 
 import (
 	"fmt"
-	"github.com/therecipe/qt/widgets"
-	"schannel-qt5/parser"
 	"strconv"
+
+	"github.com/therecipe/qt/widgets"
+
+	"schannel-qt5/parser"
 )
 
 // InvoiceDialog 显示全部的账单信息

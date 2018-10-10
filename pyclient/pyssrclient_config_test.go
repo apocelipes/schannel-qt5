@@ -1,8 +1,9 @@
 package pyclient
 
 import (
-	"strings"
 	"testing"
+
+	"strings"
 )
 
 func TestClientConfigDefault(t *testing.T) {

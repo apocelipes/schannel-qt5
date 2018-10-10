@@ -3,11 +3,12 @@ package widgets
 import (
 	"errors"
 	"regexp"
-	"schannel-qt5/config"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"schannel-qt5/config"
 )
 
 const (

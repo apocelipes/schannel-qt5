@@ -6,9 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
+
 	"schannel-qt5/config"
 	"schannel-qt5/ssr"
-	"strconv"
 )
 
 var (

@@ -1,9 +1,10 @@
 package parser
 
 import (
+	"testing"
+
 	"io/ioutil"
 	"os"
-	"testing"
 	"time"
 
 	"schannel-qt5/urls"

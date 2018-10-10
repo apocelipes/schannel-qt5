@@ -3,8 +3,9 @@ package widgets
 import (
 	"errors"
 	"fmt"
-	"github.com/therecipe/qt/widgets"
 	"regexp"
+
+	"github.com/therecipe/qt/widgets"
 )
 
 const (
