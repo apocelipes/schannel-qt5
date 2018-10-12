@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"os/exec"
+	"syscall"
 	"time"
 
 	"schannel-qt5/config"
@@ -76,6 +77,16 @@ func (p *PySSRClient) Stop() error {
 	args = append(args, "-d", "stop")
 	cmd := exec.Command("pkexec", args...)
 	return cmd.Run()
+}
+
+// IsRunning 客户端正在运行返回nil
+// INFO: 如果两个不同客户端进程使用了相同的端口号，则会导致pid-file无法删除，致使判断错误
+func (p *PySSRClient) IsRunning() error {
+	if err := syscall.Access(p.conf.PidFilePath(), syscall.F_OK); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ConnectionCheck 检查代理是否可用，不可用则返回error

@@ -14,6 +14,8 @@ type Launcher interface {
 	Restart() error
 	// Stop 关闭客户端
 	Stop() error
+	// IsRunning 客户端是否正在运行
+	IsRunning() error
 	// ConnectionCheck 检查ssr代理是否可用
 	ConnectionCheck(timeout time.Duration) error
 }

@@ -61,6 +61,32 @@ func TestPySSRClient(t *testing.T) {
 	}
 }
 
+func TestPySSRClientIsRunning(t *testing.T) {
+	checkUserConfig(t)
+	client := newPySSRClient(dummyUserConfig)
+	if client == nil {
+		t.Error("newPySSRClient failed: ", dummyUserConfig)
+	}
+
+	if err := client.Start(); err != nil {
+		t.Errorf("start client failed: %v\n", err)
+	}
+
+	// 测试是否正在运行
+	if err := client.IsRunning(); err != nil {
+		t.Fatalf("test is running error: %v\n", err)
+	}
+
+	if err := client.Stop(); err != nil {
+		t.Errorf("stop client failed: %v\n", err)
+	}
+
+	// 测试是否已经关闭
+	if err := client.IsRunning(); err == nil {
+		t.Fatalf("test not run error: %v\n", err)
+	}
+}
+
 func TestPySSRClientConnectionCheck(t *testing.T) {
 	checkUserConfig(t)
 	client := newPySSRClient(dummyUserConfig)
