@@ -12,10 +12,12 @@ type SSRNode struct {
 	NodeName string `json:"-"`
 	// 节点类型
 	Type string `json:"-"`
+
 	// 节点IP地址
 	IP     string `json:"server"`
 	Port   int64  `json:"server_port"`
 	Passwd string `json:"password"`
+
 	// 加密算法
 	Crypto string `json:"method"`
 	// 连接协议

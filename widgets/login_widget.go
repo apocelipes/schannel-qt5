@@ -25,6 +25,7 @@ type LoginWidget struct {
 	password    *widgets.QLineEdit
 	loginStatus *ColorLabel
 	remember    *widgets.QCheckBox
+
 	// 用户数据
 	conf        *config.UserConfig
 	logger      *log.Logger

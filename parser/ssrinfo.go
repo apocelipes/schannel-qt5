@@ -8,9 +8,11 @@ import (
 // SSRInfo ssr套餐信息
 type SSRInfo struct {
 	*Service
+
 	// 节点的端口和密码
 	Port   int64
 	Passwd string
+
 	// 可用数据总量
 	TotalData string
 	// 已用数据总量
@@ -19,6 +21,7 @@ type SSRInfo struct {
 	Download string
 	// 上传用量
 	Upload string
+
 	// 可用节点信息
 	Nodes []*SSRNode
 }

@@ -23,8 +23,10 @@ type ClientConfig struct {
 	// 本地端口和ip(default: 127.0.0.1:1080)
 	Addr string `json:"local_addr,omitempty"`
 	Port string `json:"local_port,omitempty"`
+
 	// fast-open 需要linux 3.7+(default: false)
 	IsFastOpen bool `json:"fast-open,omitempty"`
+
 	// pidfile存放位置(default: /tmp/ssr_client.pid)
 	PidFile string `json:"pid-file,omitempty"`
 }

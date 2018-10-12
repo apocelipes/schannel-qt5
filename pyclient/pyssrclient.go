@@ -13,10 +13,11 @@ import (
 
 // PySSRClient 调用Python实现的ssr客户端
 type PySSRClient struct {
+	// 可执行程序的路径
 	bin string
 	// binArg 运行参数
 	binArgs []string
-	// 配置
+	// 程序需要的配置
 	conf config.ClientConfig
 }
 

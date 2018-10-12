@@ -28,14 +28,17 @@ type ConfigWidget struct {
 	// client设置
 	logFile    *widgets.QLineEdit
 	logFileMsg *ColorLabel
+
 	// ssr设置
 	nodeConfigPath, ssrConfigPath, binPath          *widgets.QLineEdit
 	nodeConfigPathMsg, ssrConfigPathMsg, binPathMsg *ColorLabel
+
 	// 代理设置
 	proxy     *widgets.QLineEdit
 	proxyType *widgets.QComboBox
 	proxyBox  *widgets.QGroupBox
 	proxyMsg  *ColorLabel
+
 	// ssr client设置
 	ssrClientConfigWidget *SSRConfigWidget
 

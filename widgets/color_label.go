@@ -35,6 +35,7 @@ var (
 	ErrColorNotFound = errors.New("cannot found text")
 )
 
+// ColorLabel 使用HTML显示彩色文字
 type ColorLabel struct {
 	widgets.QLabel
 

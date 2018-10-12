@@ -24,11 +24,14 @@ type UserConfig struct {
 	// client config
 	Proxy   JSONProxy `json:"proxy_url"`
 	LogFile JSONPath  `json:"log_file"`
+
 	// ssr config
 	SSRNodeConfigPath   JSONPath `json:"ssr_node_config_path"`
 	SSRClientConfigPath JSONPath `json:"ssr_client_config_path"`
+
 	// ssr client bin path
 	SSRBin JSONPath `json:"ssr_bin"`
+
 	// ssr client config的实体数据
 	SSRClientConfig ClientConfig `json:"-"`
 }
