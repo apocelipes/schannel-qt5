@@ -27,8 +27,8 @@ func TestClientConfigDefault(t *testing.T) {
 
 func TestClientConfigSetLocalPort(t *testing.T) {
 	conf := &ClientConfig{}
-	trueData := []string{"0", "200", "2000", "1080", "8888"}
-	wrongData := []string{"test", "端口", "", "99999"}
+	trueData := []string{"200", "2000", "1080", "8888"}
+	wrongData := []string{"0", "test", "端口", "", "99999"}
 
 	for _, v := range trueData {
 		if err := conf.SetLocalPort(v); err != nil {

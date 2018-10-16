@@ -107,12 +107,12 @@ func (c *ClientConfig) Store(path string) error {
 }
 
 // 实现ClientConfigSetter
-// SetLocalPort 设置本地端口，端口不能大于65535
+// SetLocalPort 设置本地端口，端口不能大于65535且不能为0
 func (c *ClientConfig) SetLocalPort(port string) error {
 	i, err := strconv.Atoi(port)
 	if err != nil {
 		return err
-	} else if i > 65535 {
+	} else if i > 65535 || i == 0 {
 		return errors.New("port over range")
 	}
 
