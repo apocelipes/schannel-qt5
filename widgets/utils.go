@@ -25,6 +25,15 @@ var (
 	usedMatcher = regexp.MustCompile(`(.+)(GB|MB)`)
 	// 匹配linux kernel版本 A.B.C
 	versionMatcher = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
+	// 名字对应的国家/地区/城市缩写
+	geoAreaName = map[string]string{
+		"US":    "美国",
+		"SG":    "新加坡",
+		"Tokyo": "日本",
+		"EUR":   "欧洲",
+		"AMSD":  "阿姆斯特丹",
+		"LA":    "洛杉矶",
+	}
 )
 
 // convertToKb 将string类型的流量数据转换成以kb为单位的int
@@ -132,4 +141,25 @@ func checkPath(path string) error {
 	}
 
 	return nil
+}
+
+// getGeoName 根据节点名字获取对应地区信息
+func getGeoName(name string) string {
+	areas := strings.Split(name, "_")
+	// 名字不符合area_number
+	if len(areas) <= 1 {
+		return "Unknown"
+	}
+
+	areaName := make([]string, 0, len(areas)-1)
+	// 最后一个元素为节点编号，忽略
+	for _, v := range areas[:len(areas)-1] {
+		if n, ok := geoAreaName[v]; ok {
+			areaName = append(areaName, n)
+		} else {
+			areaName = append(areaName, "Unknown")
+		}
+	}
+
+	return strings.Join(areaName, "-")
 }
