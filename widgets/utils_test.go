@@ -1,13 +1,11 @@
 package widgets
 
 import (
-	"fmt"
-
 	"testing"
 )
 
 func TestGetGeoName(t *testing.T) {
-	testData := []struct {
+	testData := []*struct {
 		src string
 		res string
 	}{
@@ -45,8 +43,7 @@ func TestGetGeoName(t *testing.T) {
 		geoName := getGeoName(v.src)
 		if geoName != v.res {
 			format := "error when:\t%v\n\twant:\t%v\n\thave:\t%v\n"
-			errInfo := fmt.Sprintf(format, v.src, v.res, geoName)
-			t.Error(errInfo)
+			t.Errorf(format, v.src, v.res, geoName)
 		}
 	}
 }

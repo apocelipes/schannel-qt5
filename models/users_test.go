@@ -75,7 +75,8 @@ func TestGetUserPassword(t *testing.T) {
 			t.Errorf("get user: %s error: %v\n", v.Name, err)
 		}
 		if !bytes.Equal(user.Passwd, v.Passwd) {
-			t.Errorf("get user: %s password different\nhave: %v\n\twant: %v\n", v.Name, user.Passwd, v.Passwd)
+			format := "get user: %s password different\nhave: %v\n\twant: %v\n"
+			t.Errorf(format, v.Name, user.Passwd, v.Passwd)
 		}
 	}
 }
@@ -132,7 +133,8 @@ func TestGetAllUsers(t *testing.T) {
 
 	// 取得的数据量是否相同
 	if len(u) != len(users) {
-		t.Errorf("length error: have: %v\n\twant: %v\n", len(u), len(users))
+		format := "length error: have: %v\n\twant: %v\n"
+		t.Errorf(format, len(u), len(users))
 	}
 }
 
@@ -144,13 +146,15 @@ func TestDelPassword(t *testing.T) {
 		if v.Passwd != nil {
 			err := DelPassword(db, v.Name)
 			if err != nil {
-				t.Errorf("del %s password error: %v\n", v.Name, err)
+				format := "del %s password error: %v\n"
+				t.Errorf(format, v.Name, err)
 			}
 
 			// 查看是否已将密码设置为null
 			u, err := GetUserPassword(db, v.Name)
 			if err != nil {
-				t.Errorf("del %s password error: %v\n", v.Name, err)
+				format := "del %s password error: %v\n"
+				t.Errorf(format, v.Name, err)
 			}
 			if u.Passwd != nil {
 				t.Errorf("del password failed: %v\n", u.Passwd)

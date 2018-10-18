@@ -66,10 +66,12 @@ func TestInvoiceGetStatus(t *testing.T) {
 	for _, v := range testData {
 		info, state := v.i.GetStatus()
 		if info != v.info {
-			t.Errorf("wrong info:\n\twant :%s\n\thave: %s\n%v\n", v.info, info, v)
+			format := "wrong info:\n\twant :%s\n\thave: %s\n%v\n"
+			t.Errorf(format, v.info, info, v)
 		}
 		if state != v.isPayed {
-			t.Errorf("wrong payment state:\n\twant: %v\n\thave: %v\n%v\n", v.isPayed, state, v)
+			format := "wrong payment state:\n\twant: %v\n\thave: %v\n%v\n"
+			t.Errorf(format, v.isPayed, state, v)
 		}
 	}
 }

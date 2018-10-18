@@ -29,7 +29,8 @@ func TestGetTotal(t *testing.T) {
 	for _, v := range testData {
 		res := getTotal.FindStringSubmatch(v.data)[1]
 		if res != v.res {
-			t.Errorf("regexp getTotal failed: %v\n\twant: %v\n\thave: %v\n", v, v.res, res)
+			format := "regexp getTotal failed: %v\n\twant: %v\n\thave: %v\n"
+			t.Errorf(format, v, v.res, res)
 		}
 	}
 }
@@ -61,7 +62,8 @@ func TestGetDataInfo(t *testing.T) {
 	for _, v := range testData {
 		res := getDataInfo.FindStringSubmatch(v.data)[1]
 		if res != v.res {
-			t.Errorf("regexp getDataInfo failed: %s\n\twant: %s\n\thave: %s\n", v.data, v.res, res)
+			format := "regexp getDataInfo failed: %s\n\twant: %s\n\thave: %s\n"
+			t.Errorf(format, v.data, v.res, res)
 		}
 	}
 }
@@ -116,27 +118,34 @@ func TestGetInvoice(t *testing.T) {
 
 	res := GetInvoices(string(testData))
 	if len(res) != len(correctRes) {
-		t.Errorf("解析到的数据量不正确，期望%d个，实际%d个\n", len(correctRes), len(res))
+		format := "解析到的数据量不正确，期望%d个，实际%d个\n"
+		t.Errorf(format, len(correctRes), len(res))
 	}
 
 	for i := range res {
 		if res[i].Number != correctRes[i].Number {
-			t.Errorf("订单号错误，期望%v，实际%v\n", correctRes[i].Number, res[i].Number)
+			format := "订单号错误，期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].Number, res[i].Number)
 		}
 		if res[i].Link != correctRes[i].Link {
-			t.Errorf("链接错误，期望%v，实际%v\n", correctRes[i].Link, res[i].Link)
+			format := "链接错误，期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].Link, res[i].Link)
 		}
 		if res[i].ExpireDate != correctRes[i].ExpireDate {
-			t.Errorf("过期日期错误，期望%v，实际%v\n", correctRes[i].ExpireDate, res[i].ExpireDate)
+			format := "过期日期错误，期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].ExpireDate, res[i].ExpireDate)
 		}
 		if res[i].StartDate != correctRes[i].StartDate {
-			t.Errorf("开始日期错误， 期望%v，实际%v\n", correctRes[i].StartDate, res[i].StartDate)
+			format := "开始日期错误， 期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].StartDate, res[i].StartDate)
 		}
 		if res[i].Payment != correctRes[i].Payment {
-			t.Errorf("支付金额错误，期望%v，实际%v\n", correctRes[i].Payment, res[i].Payment)
+			format := "支付金额错误，期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].Payment, res[i].Payment)
 		}
 		if res[i].State != correctRes[i].State {
-			t.Errorf("状态错误，期望%v，实际%v\n", correctRes[i].State, res[i].State)
+			format := "状态错误，期望%v，实际%v\n"
+			t.Errorf(format, correctRes[i].State, res[i].State)
 		}
 	}
 }

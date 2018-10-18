@@ -27,14 +27,26 @@ func TestClientConfigDefault(t *testing.T) {
 
 func TestClientConfigSetLocalPort(t *testing.T) {
 	conf := &ClientConfig{}
-	trueData := []string{"200", "2000", "1080", "8888"}
-	wrongData := []string{"0", "test", "端口", "", "99999"}
+	trueData := []string{
+		"200",
+		"2000",
+		"1080",
+		"8888",
+	}
+	wrongData := []string{
+		"",
+		"0",
+		"test",
+		"端口",
+		"99999",
+	}
 
 	for _, v := range trueData {
 		if err := conf.SetLocalPort(v); err != nil {
 			t.Errorf("set port failed: %v\n", v)
 		} else if conf.LocalPort() != v {
-			t.Errorf("set port wrong: have %v; want %v\n", conf.LocalPort(), v)
+			format := "set port wrong: have %v; want %v\n"
+			t.Errorf(format, conf.LocalPort(), v)
 		}
 	}
 
@@ -62,14 +74,26 @@ func TestClientConfigSetFastOpen(t *testing.T) {
 
 func TestClientConfigSetLocalAddr(t *testing.T) {
 	conf := &ClientConfig{}
-	trueData := []string{"0.0.0.0", "127.0.0.1", "10.1.1.2", "210.199.200.201"}
-	wrongData := []string{"", "12345", "12.22.33.", "255.256.0.1", "test"}
+	trueData := []string{
+		"0.0.0.0",
+		"127.0.0.1",
+		"10.1.1.2",
+		"210.199.200.201",
+	}
+	wrongData := []string{
+		"",
+		"12345",
+		"12.22.33.",
+		"255.256.0.1",
+		"test",
+	}
 
 	for _, v := range trueData {
 		if err := conf.SetLocalAddr(v); err != nil {
 			t.Errorf("set addr failed: %v\n", v)
 		} else if conf.LocalAddr() != v {
-			t.Errorf("set addr wrong: have %v; want %v\n", conf.LocalAddr(), v)
+			format := "set addr wrong: have %v; want %v\n"
+			t.Errorf(format, conf.LocalAddr(), v)
 		}
 	}
 
@@ -89,13 +113,15 @@ func TestClientConfigSetPidFilePath(t *testing.T) {
 		if err := conf.SetPidFilePath(v); err != nil {
 			t.Errorf("set pidfile failed: %v\n", v)
 		} else if conf.PidFilePath() != v {
-			t.Errorf("set pidfile wrong: have %v; want %v\n", conf.PidFilePath(), v)
+			format := "set pidfile wrong: have %v; want %v\n"
+			t.Errorf(format, conf.PidFilePath(), v)
 		}
 	}
 
 	for _, v := range wrongData {
 		if err := conf.SetPidFilePath(v); err == nil {
-			t.Errorf("set wrong pidfile but didn't fail: %v\n", v)
+			format := "set wrong pidfile but didn't fail: %v\n"
+			t.Errorf(format, v)
 		}
 	}
 }
@@ -123,7 +149,9 @@ func TestClientConfigGenArgs(t *testing.T) {
 				IsFastOpen: false,
 				PidFile:    "",
 			},
-			args: "-b " + defaultAddr + " -l " + defaultPort + " --pid-file " + defaultPidFile,
+			args: "-b " + defaultAddr +
+				" -l " + defaultPort +
+				" --pid-file " + defaultPidFile,
 		},
 		{
 			c: &ClientConfig{
@@ -132,7 +160,10 @@ func TestClientConfigGenArgs(t *testing.T) {
 				IsFastOpen: true,
 				PidFile:    "/tmp/a.pid",
 			},
-			args: "-b 172.17.0.1 -l 8888 --pid-file /tmp/a.pid --fast-open",
+			args: "-b 172.17.0.1 " +
+				"-l 8888 " +
+				"--pid-file /tmp/a.pid " +
+				"--fast-open",
 		},
 	}
 
@@ -188,7 +219,8 @@ func TestClientConfigLoad(t *testing.T) {
 		}
 
 		if conf != v.sample {
-			t.Errorf("load failed:\n\thave: %v\n\twant: %v\n", conf, v.sample)
+			format := "load failed:\n\thave: %v\n\twant: %v\n"
+			t.Errorf(format, conf, v.sample)
 		}
 	}
 }
