@@ -35,7 +35,8 @@ func TestEncryptDecrypt(t *testing.T) {
 			t.Errorf("decrypto: %v\n", err)
 		}
 		if string(password) != v.password {
-			t.Errorf("password not equal, old: %s, new: %s\n", v.password, password)
+			format := "password not equal, old: %s, new: %s\n"
+			t.Errorf(format, v.password, password)
 		}
 	}
 }
