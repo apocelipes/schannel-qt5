@@ -166,9 +166,13 @@ func (w *ConfigWidget) InitUI() {
 	leftLayout.AddWidget(userBox, 0, 0)
 	leftLayout.AddWidget(ssrBox, 0, 0)
 	leftLayout.AddWidget(w.proxyBox, 0, 0)
+	rightLayout := widgets.NewQVBoxLayout()
+	rightLayout.AddWidget(w.ssrClientConfigWidget, 0, 0)
+	// 防止Grid被过度拉伸
+	rightLayout.AddStretch(0)
 	topLayout := widgets.NewQHBoxLayout()
 	topLayout.AddLayout(leftLayout, 0)
-	topLayout.AddWidget(w.ssrClientConfigWidget, 0, 0)
+	topLayout.AddLayout(rightLayout, 0)
 	mainLayout := widgets.NewQVBoxLayout()
 	mainLayout.AddLayout(topLayout, 0)
 	mainLayout.AddWidget(saveButton, 0, 0)
@@ -263,8 +267,8 @@ func (w *ConfigWidget) GetProxyUrl() string {
 		return ""
 	}
 
-	ptype := w.proxyType.CurrentText()
-	return ptype + "://" + w.proxy.Text()
+	pType := w.proxyType.CurrentText()
+	return pType + "://" + w.proxy.Text()
 }
 
 // validProxy 验证proxy URL是否合法

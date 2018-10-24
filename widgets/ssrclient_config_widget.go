@@ -74,9 +74,9 @@ func (s *SSRConfigWidget) InitUI() {
 	} else if fastOpenAble(version) {
 		s.fastOpen.SetEnabled(true)
 		s.fastOpen.SetChecked(s.conf.FastOpen())
-		versionInfo.SetText(fmt.Sprintf("内核版本: %v", version))
+		versionInfo.SetText(fmt.Sprintf("Linux kernel: %v", version))
 	} else {
-		versionInfo.SetText(fmt.Sprintf("内核不支持fast-open: %v", version))
+		versionInfo.SetText(fmt.Sprintf("内核版本不支持fast-open: %v", version))
 	}
 
 	groupLayout := widgets.NewQGridLayout2()
