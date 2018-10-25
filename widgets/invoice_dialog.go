@@ -14,12 +14,26 @@ type InvoiceDialog struct {
 	widgets.QDialog
 
 	table    *widgets.QTableWidget
-	infobar  *widgets.QStatusBar
+	infoBar  *widgets.QStatusBar
+	// 选中的行数
 	selected *widgets.QLabel
+	// 选中的链接
 	link     *widgets.QLabel
 
 	invoices []*parser.Invoice
 }
+
+var (
+	// 表头
+	cols = []string{
+		"账单编号",
+		"链接",
+		"开始日期",
+		"结束日期",
+		"金额（元）",
+		"支付状态",
+	}
+)
 
 // NewInvoiceDialogWithData 生成dialog
 func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
@@ -27,26 +41,19 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	dialog.invoices = data
 
 	// 设置infobar，选中内容时显示账单链接
-	dialog.infobar = widgets.NewQStatusBar(nil)
+	dialog.infoBar = widgets.NewQStatusBar(nil)
 	dialog.selected = widgets.NewQLabel2("未选中", nil, 0)
 	dialog.link = widgets.NewQLabel(nil, 0)
-	dialog.infobar.AddPermanentWidget(dialog.selected, 0)
-	dialog.infobar.AddPermanentWidget(dialog.link, 0)
+	dialog.infoBar.AddPermanentWidget(dialog.selected, 0)
+	dialog.infoBar.AddPermanentWidget(dialog.link, 0)
 
 	// 初始化table，数据已经被排序
 	dialog.table = widgets.NewQTableWidget(nil)
 	// 设置行数，不设置将不显示任何数据
 	dialog.table.SetRowCount(len(dialog.invoices))
 	// 设置表头
-	dialog.table.SetColumnCount(6)
-	dialog.table.SetHorizontalHeaderLabels([]string{
-		"账单编号",
-		"链接",
-		"开始日期",
-		"结束日期",
-		"金额（元）",
-		"支付状态",
-	})
+	dialog.table.SetColumnCount(len(cols))
+	dialog.table.SetHorizontalHeaderLabels(cols)
 	// 去除边框
 	dialog.table.SetShowGrid(false)
 	dialog.table.SetFrameShape(widgets.QFrame__NoFrame)
@@ -69,7 +76,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	vbox := widgets.NewQVBoxLayout()
 	vbox.AddWidget(dialog.table, 0, 0)
 	vbox.AddStretch(0)
-	vbox.AddWidget(dialog.infobar, 0, 0)
+	vbox.AddWidget(dialog.infoBar, 0, 0)
 	dialog.SetLayout(vbox)
 
 	return dialog
@@ -110,7 +117,7 @@ func (dialog *InvoiceDialog) setTable() {
 	}
 }
 
-// setLink 当选中row中的单元格时将链接更新到infobar
+// setLink 当选中row中的单元格时将链接更新到infoBar
 func (dialog *InvoiceDialog) setLink(item *widgets.QTableWidgetItem) {
 	index := item.Row()
 	invoice := dialog.invoices[index]
