@@ -18,6 +18,8 @@ const (
 	MB = 1024 * KB
 	// GB 1024mb
 	GB = MB * 1024
+	// HighRatio 流量使用量警告阀值
+	HighRatio = 0.9
 )
 
 var (

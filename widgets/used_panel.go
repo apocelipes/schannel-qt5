@@ -8,11 +8,6 @@ import (
 	"schannel-qt5/parser"
 )
 
-const (
-	// HighRatio 流量使用量警告
-	HighRatio = 0.9
-)
-
 type UsedPanel struct {
 	widgets.QWidget
 
