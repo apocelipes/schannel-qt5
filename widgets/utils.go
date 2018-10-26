@@ -24,7 +24,7 @@ const (
 
 var (
 	// Matcher 匹配数字和流量单位
-	usedMatcher = regexp.MustCompile(`(.+)(GB|MB)`)
+	usedMatcher = regexp.MustCompile(`(.+)(GB|MB|KB)`)
 	// 匹配linux kernel版本 A.B.C
 	versionMatcher = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
 	// 名字对应的国家/地区/城市缩写
@@ -39,8 +39,13 @@ var (
 )
 
 // convertToKb 将string类型的流量数据转换成以kb为单位的int
+// data格式为 number[KB|MB|GB]
 func convertToKb(data string) int {
 	tmp := usedMatcher.FindStringSubmatch(data)
+	if tmp == nil {
+		return -1
+	}
+	// tmp[0]为完整字符串，1为数字，2为容量单位
 	number, err := strconv.ParseFloat(tmp[1], 64)
 	if err != nil {
 		return -1
