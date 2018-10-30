@@ -94,6 +94,9 @@ func (s *SSRSwitchPanel) InitUI() {
 	componentLayout.AddWidget3(s.nodeInfo, 1, 0, 1, 3,0)
 
 	s.connStat = NewColorLabelWithColor("", "")
+	// 设置自动换行
+	s.connStat.AdjustSize()
+	s.connStat.SetWordWrap(true)
 	s.setConnStat()
 	connStatLabel := widgets.NewQLabel2("连接状态:", nil, 0)
 	componentLayout.AddWidget(connStatLabel, 2, 0, 0)
