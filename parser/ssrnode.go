@@ -10,7 +10,7 @@ import (
 // SSRNode ssr节点信息
 type SSRNode struct {
 	// 节点名字
-	NodeName string `json:"-"`
+	NodeName string `json:"node_name"`
 	// 节点类型
 	Type string `json:"-"`
 

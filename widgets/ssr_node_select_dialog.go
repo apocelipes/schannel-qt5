@@ -54,6 +54,7 @@ func (dialog *NodeSelectDialog) InitUI() {
 		dialog.detail.SetNodeDetail(dialog.CurrentNode)
 	})
 	// 设置当前选择的节点
+	// 如果节点不在当前列表中，则默认选择index 0
 	if dialog.CurrentNode != nil {
 		for i := range dialog.nodes {
 			if dialog.nodes[i].NodeName == dialog.CurrentNode.NodeName {
