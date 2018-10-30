@@ -11,4 +11,6 @@ const (
 	LoginPath = `https://www.schannel.net/dologin.php`
 	// InvoicePath 账单列表的URL
 	InvoicePath = `https://www.schannel.net/clientarea.php?action=invoices`
+	// 测试代理的URL
+	ProxyTestPath = `https://golang.org`
 )

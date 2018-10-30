@@ -1,6 +1,8 @@
 package pyclient
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -101,7 +103,7 @@ func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
 	}
 	client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 
-	request, err := http.NewRequest("GET", urls.RootPath, nil)
+	request, err := http.NewRequest("GET", urls.ProxyTestPath, nil)
 	if err != nil {
 		return err
 	}
@@ -112,7 +114,8 @@ func (p *PySSRClient) ConnectionCheck(timeout time.Duration) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return err
+		info := fmt.Sprintf("Get a wrong status code: %v", resp.StatusCode)
+		return errors.New(info)
 	}
 
 	return nil
