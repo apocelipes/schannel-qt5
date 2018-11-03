@@ -6,8 +6,8 @@ import (
 	"schannel-qt5/parser"
 )
 
-// ServiceInfoWidget 显示账户和服务信息
-type ServiceInfoWidget struct {
+// SummarizedWidget 综合服务信息显示，包括用户信息，服务信息
+type SummarizedWidget struct {
 	widgets.QWidget
 
 	// 修改服务信息
@@ -20,16 +20,15 @@ type ServiceInfoWidget struct {
 	// 用户数据接口
 	dataBridge UserDataBridge
 
-	// 服务信息
-	user         *widgets.QLabel
-	name         *widgets.QLabel
-	payment      *widgets.QLabel
-	expireDate   *widgets.QLabel
-	serviceState *widgets.QLabel
-	// ssr简略信息
-	//TODO: ssr简略信息+开关
+	// 服务信息面板
+	servicePanel *ServicePanel
+	// ssr开关面板
+	switchPanel  *SSRSwitchPanel
 	// 使用量信息
-	usedPanel *UsedPanel
+	usedPanel    *UsedPanel
 	// 是否需要付款
 	invoicePanel *InvoicePanel
+
+	// 用户名-email
+	user string
 }
