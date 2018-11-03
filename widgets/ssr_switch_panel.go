@@ -84,14 +84,14 @@ func (s *SSRSwitchPanel) InitUI() {
 	group := widgets.NewQGroupBox2("ssr开关", nil)
 	componentLayout := widgets.NewQGridLayout2()
 
+	s.nodeInfo = NewNodeInfoPanelWithNode(s.currentNode)
+	componentLayout.AddWidget3(s.nodeInfo, 0, 0, 1, 3, 0)
+
 	ssrStatLabel := widgets.NewQLabel2("ssr状态:", nil, 0)
 	s.ssrStat = NewColorLabelWithColor("", "")
 	s.setSSRStat()
-	componentLayout.AddWidget(ssrStatLabel, 0, 0, 0)
-	componentLayout.AddWidget3(s.ssrStat, 0, 1, 1, 2, 0)
-
-	s.nodeInfo = NewNodeInfoPanelWithNode(s.currentNode)
-	componentLayout.AddWidget3(s.nodeInfo, 1, 0, 1, 3,0)
+	componentLayout.AddWidget(ssrStatLabel, 1, 0, 0)
+	componentLayout.AddWidget3(s.ssrStat, 1, 1, 1, 2, 0)
 
 	s.connStat = NewColorLabelWithColor("", "")
 	// 设置自动换行
