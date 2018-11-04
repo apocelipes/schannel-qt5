@@ -52,7 +52,7 @@ func NewSSRSwitchPanel2(conf *config.UserConfig, nodes []*parser.SSRNode) *SSRSw
 
 	panel.conf = conf
 	panel.nodes = make([]*parser.SSRNode, len(nodes))
-	copy(pnel.nodes, nodes)
+	copy(panel.nodes, nodes)
 	panel.SortNode()
 
 	panel.ssrClient = ssr.NewLauncher("python", panel.conf)

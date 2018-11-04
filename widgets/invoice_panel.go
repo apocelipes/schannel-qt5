@@ -33,7 +33,7 @@ func (panel *InvoicePanel) sortInvoices() {
 // NewInvoicePanelWithData 生成InvoicePanel
 func NewInvoicePanelWithData(data []*parser.Invoice) *InvoicePanel {
 	panel := NewInvoicePanel(nil, 0)
-	panel.invoices = make([]*parser.Invoice, 0, len(data))
+	panel.invoices = make([]*parser.Invoice, len(data))
 	copy(panel.invoices, data)
 	panel.sortInvoices()
 

@@ -31,7 +31,7 @@ type UsedPanel struct {
 }
 
 // NewUsedPanelWithInfo 创建使用进度widget
-func NewUsedPanelWithInfo(info *parser.SSRInfo) *UsedProgressBar {
+func NewUsedPanelWithInfo(info *parser.SSRInfo) *UsedPanel {
 	u := NewUsedPanel(nil, 0)
 	u.InitUI(info)
 
