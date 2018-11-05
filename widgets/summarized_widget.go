@@ -92,8 +92,7 @@ func (sw *SummarizedWidget) dataRefresh() {
 	// sw.service已经被外部更新
 	ssrInfo := sw.dataBridge.SSRInfos(sw.service)
 	sw.servicePanel.UpadteInfo(sw.user, ssrInfo)
-	//TODO 更新账单列表而不是重新生成widget
-	sw.invoicePanel = NewInvoicePanelWithData(sw.dataBridge.Invoices())
+	sw.invoicePanel.UpdateInvoices(sw.dataBridge.Invoices())
 	sw.switchPanel.DataRefresh(sw.conf, ssrInfo.Nodes)
 	sw.usedPanel.DataRefresh(ssrInfo)
 }

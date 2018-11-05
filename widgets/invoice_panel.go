@@ -40,12 +40,7 @@ func NewInvoicePanelWithData(data []*parser.Invoice) *InvoicePanel {
 	group := widgets.NewQGroupBox2("账单情况", nil)
 	hbox := widgets.NewQHBoxLayout()
 
-	text, isPaid := panel.invoices[len(panel.invoices)-1].GetStatus()
-	if isPaid {
-		panel.status = NewColorLabelWithColor(text, "green")
-	} else {
-		panel.status = NewColorLabelWithColor(text, "red")
-	}
+	panel.setInvoiceStatus()
 	hbox.AddWidget(panel.status, 0, 0)
 
 	panel.showInvoices = widgets.NewQPushButton2("详细账单", nil)
@@ -64,4 +59,22 @@ func NewInvoicePanelWithData(data []*parser.Invoice) *InvoicePanel {
 func (panel *InvoicePanel) showInvoiceDialog(_ bool) {
 	dialog := NewInvoiceDialogWithData(panel.invoices)
 	dialog.Exec()
+}
+
+// setInvoiceStatus 设置invoice的显示信息和颜色
+func (panel *InvoicePanel) setInvoiceStatus() {
+	text, isPaid := panel.invoices[len(panel.invoices)-1].GetStatus()
+	if isPaid {
+		panel.status = NewColorLabelWithColor(text, "green")
+	} else {
+		panel.status = NewColorLabelWithColor(text, "red")
+	}
+}
+
+// UpdateInvoices 刷新账单信息显示
+func (panel *InvoicePanel) UpdateInvoices(data []*parser.Invoice) {
+	panel.invoices = make([]*parser.Invoice, len(data))
+	copy(panel.invoices, data)
+	panel.sortInvoices()
+	panel.setInvoiceStatus()
 }

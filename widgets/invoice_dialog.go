@@ -13,12 +13,12 @@ import (
 type InvoiceDialog struct {
 	widgets.QDialog
 
-	table    *widgets.QTableWidget
-	infoBar  *widgets.QStatusBar
+	table   *widgets.QTableWidget
+	infoBar *widgets.QStatusBar
 	// 选中的行数
 	selected *widgets.QLabel
 	// 选中的链接
-	link     *widgets.QLabel
+	link *widgets.QLabel
 
 	invoices []*parser.Invoice
 }
@@ -54,6 +54,9 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	// 设置表头
 	dialog.table.SetColumnCount(len(cols))
 	dialog.table.SetHorizontalHeaderLabels(cols)
+	// 设置链接列的列宽，以显示更完整的内容
+	linkColWidth := dialog.table.ColumnWidth(1) * 2
+	dialog.table.SetColumnWidth(1, linkColWidth)
 	// 去除边框
 	dialog.table.SetShowGrid(false)
 	dialog.table.SetFrameShape(widgets.QFrame__NoFrame)
@@ -78,8 +81,18 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	vbox.AddStretch(0)
 	vbox.AddWidget(dialog.infoBar, 0, 0)
 	dialog.SetLayout(vbox)
+	dialog.setDialogSize()
 
 	return dialog
+}
+
+// setDialogSize 设置dialog宽度与table一致
+func (dialog *InvoiceDialog) setDialogSize() {
+	width := 0
+	for i := 0; i < len(cols); i++ {
+		width += dialog.table.ColumnWidth(i)
+	}
+	dialog.SetMinimumWidth(width)
 }
 
 // setTable 设置table
