@@ -18,7 +18,7 @@ type LoginWidget struct {
 
 	// loginUser 将登录所用的用户名传递给父控件
 	_ func(string)         `signal:"loginUser"`
-	_ func()               `signal:"loginFailed,auto"`
+	_ func(string)         `signal:"loginFailed,auto"`
 	_ func([]*http.Cookie) `signal:"logined"`
 
 	username    *widgets.QComboBox
@@ -27,9 +27,9 @@ type LoginWidget struct {
 	remember    *widgets.QCheckBox
 
 	// 用户数据
-	conf        *config.UserConfig
-	logger      *log.Logger
-	db          *xorm.Engine
+	conf   *config.UserConfig
+	logger *log.Logger
+	db     *xorm.Engine
 }
 
 // NewLoginWidget2 根据config，logger，db生成登录控件
@@ -79,7 +79,8 @@ func (l *LoginWidget) InitUI() {
 	passwdInputLayout.AddWidget(passwdLabel, 0, 0)
 	passwdInputLayout.AddWidget(l.password, 0, 0)
 
-	l.loginStatus = NewColorLabelWithColor("用户名或密码错误，请重试", "red")
+	// 空的ColorLabel，预备填充错误信息
+	l.loginStatus = NewColorLabelWithColor("", "red")
 	l.loginStatus.Hide()
 
 	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)
@@ -107,7 +108,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 	passwd := l.password.Text()
 	user := l.username.CurrentText()
 	if user == "" || passwd == "" {
-		l.LoginFailed()
+		l.LoginFailed("用户名/密码不能为空")
 		return
 	}
 
@@ -115,7 +116,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 	cookies, err := crawler.GetAuth(user, passwd, l.conf.Proxy.String())
 	if err != nil {
 		l.logger.Printf("crawler failed: %v\n", err)
-		l.LoginFailed()
+		l.LoginFailed("用户名或密码错误")
 		return
 	}
 
@@ -140,7 +141,9 @@ func (l *LoginWidget) checkLogin(_ bool) {
 	l.Logined(cookies)
 }
 
-func (l *LoginWidget) loginFailed() {
+// 更新并显示错误信息
+func (l *LoginWidget) loginFailed(errInfo string) {
+	l.loginStatus.SetDefaultColorText(errInfo)
 	if l.loginStatus.IsHidden() {
 		l.loginStatus.Show()
 	}
