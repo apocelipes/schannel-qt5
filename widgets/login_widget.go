@@ -16,10 +16,10 @@ import (
 type LoginWidget struct {
 	widgets.QWidget
 
-	// loginUser 将登录所用的用户名传递给父控件
-	_ func(string)         `signal:"loginUser"`
-	_ func(string)         `signal:"loginFailed,auto"`
-	_ func([]*http.Cookie) `signal:"logined"`
+	// loginFailed 登录失败显示错误信息
+	// loginSuccess 将登录成功的用户名和cookies传递给父控件
+	_ func(string)                 `signal:"loginFailed,auto"`
+	_ func(string, []*http.Cookie) `signal:"loginSuccess"`
 
 	username    *widgets.QComboBox
 	password    *widgets.QLineEdit
@@ -48,7 +48,6 @@ func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db *xorm.Engin
 }
 
 func (l *LoginWidget) InitUI() {
-	userLabel := widgets.NewQLabel2("用户名: ", nil, 0)
 	l.username = widgets.NewQComboBox(nil)
 	l.username.SetEditable(true)
 	users, err := models.GetAllUsers(l.db)
@@ -64,20 +63,9 @@ func (l *LoginWidget) InitUI() {
 	// 实现记住用户密码
 	l.username.ConnectCurrentTextChanged(l.setPassword)
 
-	userLabel.SetBuddy(l.username)
-	userInputLayout := widgets.NewQHBoxLayout()
-	userInputLayout.AddWidget(userLabel, 0, 0)
-	userInputLayout.AddWidget(l.username, 0, 0)
-
-	passwdLabel := widgets.NewQLabel2("密码:", nil, 0)
 	l.password = widgets.NewQLineEdit(nil)
 	l.password.SetPlaceholderText("密码")
 	l.password.SetEchoMode(widgets.QLineEdit__Password)
-
-	passwdLabel.SetBuddy(l.password)
-	passwdInputLayout := widgets.NewQHBoxLayout()
-	passwdInputLayout.AddWidget(passwdLabel, 0, 0)
-	passwdInputLayout.AddWidget(l.password, 0, 0)
 
 	// 空的ColorLabel，预备填充错误信息
 	l.loginStatus = NewColorLabelWithColor("", "red")
@@ -91,12 +79,11 @@ func (l *LoginWidget) InitUI() {
 	loginLayout.AddStretch(0)
 	loginLayout.AddWidget(loginButton, 0, 0)
 
-	mainLayout := widgets.NewQVBoxLayout()
-	mainLayout.AddWidget(l.loginStatus, 0, 0)
-	mainLayout.AddLayout(userInputLayout, 0)
-	mainLayout.AddLayout(passwdInputLayout, 0)
-	mainLayout.AddWidget(l.remember, 0, 0)
-	mainLayout.AddLayout(loginLayout, 0)
+	mainLayout := widgets.NewQFormLayout(nil)
+	mainLayout.AddRow5(l.loginStatus)
+	mainLayout.AddRow3("用户名：", l.username)
+	mainLayout.AddRow3("密码：", l.password)
+	mainLayout.AddRow6(loginLayout)
 	l.SetLayout(mainLayout)
 }
 
@@ -137,8 +124,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 
 	// 传递登录信息
 	l.logger.Printf("logined as [%s] success\n", user)
-	l.LoginUser(user)
-	l.Logined(cookies)
+	l.LoginSuccess(user, cookies)
 }
 
 // 更新并显示错误信息
