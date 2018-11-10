@@ -3,6 +3,7 @@ package pyclient
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -31,15 +32,17 @@ func init() {
 
 // newPySSRClient 这个函数供ssr.LauncherMaker调用，用于生成ssr.Launcher
 func newPySSRClient(c *config.UserConfig) ssr.Launcher {
-	p := new(PySSRClient)
+	p := &PySSRClient{}
 	bin, err := c.SSRBin.AbsPath()
 	if err != nil {
+		log.Println(err)
 		return nil
 	}
 	p.bin = bin
 
 	nodeConfigFile, err := c.SSRNodeConfigPath.AbsPath()
 	if err != nil {
+		log.Println(err)
 		return nil
 	}
 

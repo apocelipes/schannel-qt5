@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"time"
 
@@ -57,12 +58,14 @@ func NewSSRSwitchPanel2(conf *config.UserConfig, nodes []*parser.SSRNode) *SSRSw
 
 	panel.ssrClient = ssr.NewLauncher("python", panel.conf)
 	if panel.ssrClient == nil {
+		log.Println("ssr client created failed")
 		return nil
 	}
 
 	panel.currentNode = &parser.SSRNode{}
 	nodePath, err := panel.conf.SSRNodeConfigPath.AbsPath()
 	if err != nil {
+		log.Println("node load failed: ", err)
 		return nil
 	}
 	panel.currentNode.Load(nodePath)
@@ -202,7 +205,13 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 
 	//TODO 检测当前节点不在节点列表的情况
 	s.currentNode = &parser.SSRNode{}
-	s.currentNode.Load(s.conf.SSRNodeConfigPath.String())
+	nodeConfigPath, err := s.conf.SSRNodeConfigPath.AbsPath()
+	if err != nil {
+		// 节点配置获取失败，错误信息显示在ssr状态上
+		s.ssrStat.SetColorText(err.Error(), "red")
+		return
+	}
+	s.currentNode.Load(nodeConfigPath)
 	s.nodeInfo.DataRefresh(s.currentNode)
 	s.setConnStat()
 	s.setSSRStat()

@@ -69,7 +69,11 @@ func (u *UserConfig) StoreConfig() error {
 		return err
 	}
 
-	if err := u.SSRClientConfig.Store(u.SSRClientConfigPath.String()); err != nil {
+	clientConfigPath, err := u.SSRClientConfigPath.AbsPath()
+	if err != nil {
+		return err
+	}
+	if err := u.SSRClientConfig.Store(clientConfigPath); err != nil {
 		return err
 	}
 
@@ -98,7 +102,11 @@ func (u *UserConfig) LoadConfig() error {
 		return err
 	}
 
-	if err := u.SSRClientConfig.Load(u.SSRClientConfigPath.String()); err != nil {
+	clientConfigPath, err := u.SSRClientConfigPath.AbsPath()
+	if err != nil {
+		return err
+	}
+	if err := u.SSRClientConfig.Load(clientConfigPath); err != nil {
 		return err
 	}
 

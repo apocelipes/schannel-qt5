@@ -54,8 +54,8 @@ func (l *LoginWidget) InitUI() {
 	if err != nil {
 		l.logger.Fatalln(err)
 	}
-	// 第一项为空
-	names := make([]string, 1, len(users)+1)
+
+	names := make([]string, 0, len(users))
 	for _, v := range users {
 		names = append(names, v.Name)
 	}
@@ -66,6 +66,16 @@ func (l *LoginWidget) InitUI() {
 	l.password = widgets.NewQLineEdit(nil)
 	l.password.SetPlaceholderText("密码")
 	l.password.SetEchoMode(widgets.QLineEdit__Password)
+	// 设置第一个记录用户的密码
+	// 因为combox默认选择显示第一个name，不会触发信号
+	if len(users) != 0 {
+		info, err := models.GetUserPassword(l.db, names[0])
+		if err != nil {
+			l.logger.Println(err)
+		} else {
+			l.password.SetText(string(info.Passwd))
+		}
+	}
 
 	// 空的ColorLabel，预备填充错误信息
 	l.loginStatus = NewColorLabelWithColor("", "red")
@@ -76,6 +86,7 @@ func (l *LoginWidget) InitUI() {
 	loginButton.ConnectClicked(l.checkLogin)
 
 	loginLayout := widgets.NewQHBoxLayout()
+	loginLayout.AddWidget(l.remember, 0, 0)
 	loginLayout.AddStretch(0)
 	loginLayout.AddWidget(loginButton, 0, 0)
 
