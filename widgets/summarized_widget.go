@@ -15,8 +15,8 @@ type SummarizedWidget struct {
 	// 收到数据变动
 	_ func() `signal:"dataRefresh,auto"`
 	// 发出数据变动，让上层控件更新service
-	// 上层控件完成service的更新后发送DataRefresh信号
-	_ func() `signal:"serviceNeedUpdate"`
+	// 上层控件完成service的更新后发送DataRefresh信号，int值为当前的index
+	_ func(int) `signal:"serviceNeedUpdate"`
 
 	// 用户数据接口
 	dataBridge UserDataBridge
@@ -36,10 +36,14 @@ type SummarizedWidget struct {
 	conf *config.UserConfig
 	// 服务信息
 	service *parser.Service
+	// 综合信息面板编号，因为可能不止一个服务，所以用来做身份区别
+	// index与services数组中的索引相同
+	index int
 }
 
 // NewSummarizedWidget2 创建综合信息控件
-func NewSummarizedWidget2(user string,
+func NewSummarizedWidget2(index int,
+	user string,
 	service *parser.Service,
 	conf *config.UserConfig,
 	dataBridge UserDataBridge) *SummarizedWidget {
@@ -52,6 +56,7 @@ func NewSummarizedWidget2(user string,
 	sw.dataBridge = dataBridge
 	sw.service = service
 	sw.conf = conf
+	sw.index = index
 	sw.InitUI()
 
 	return sw
@@ -68,7 +73,7 @@ func (sw *SummarizedWidget) InitUI() {
 	updateButton := widgets.NewQPushButton2("刷新", nil)
 	// 通知上层控件更新sw的service
 	updateButton.ConnectClicked(func(_ bool) {
-		sw.ServiceNeedUpdate()
+		sw.ServiceNeedUpdate(sw.index)
 	})
 	leftLayout := widgets.NewQVBoxLayout()
 	leftLayout.AddWidget(sw.servicePanel, 0, 0)
