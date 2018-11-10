@@ -41,15 +41,16 @@ func NewSSRConfigWidget2(conf config.ClientConfig) *SSRConfigWidget {
 // InitUI 初始化界面
 func (s *SSRConfigWidget) InitUI() {
 	group := widgets.NewQGroupBox2("ssr client设置", nil)
+	groupLayout := widgets.NewQFormLayout(nil)
 
-	addrLabel := widgets.NewQLabel2("本地地址：", nil, 0)
 	s.localAddr = widgets.NewQLineEdit(nil)
 	s.localAddr.SetPlaceholderText("绑定本地ip地址")
 	s.localAddr.SetText(s.conf.LocalAddr())
 	s.localAddrMsg = NewColorLabelWithColor("不是合法的ip地址", "red")
 	s.localAddrMsg.Hide()
+	groupLayout.AddRow3("本地地址：", s.localAddr)
+	groupLayout.AddRow5(s.localAddrMsg)
 
-	portLabel := widgets.NewQLabel2("本地端口：", nil, 0)
 	s.localPort = widgets.NewQSpinBox(nil)
 	// 端口从1024-65535
 	s.localPort.SetRange(1024, 65535)
@@ -57,13 +58,16 @@ func (s *SSRConfigWidget) InitUI() {
 	s.localPort.SetValue(port)
 	s.localPortMsg = NewColorLabelWithColor("不是合法的端口值", "red")
 	s.localPortMsg.Hide()
+	groupLayout.AddRow3("本地端口：", s.localPort)
+	groupLayout.AddRow5(s.localPortMsg)
 
-	pidFileLabel := widgets.NewQLabel2("pid-file存放路径：", nil, 0)
 	s.pidFilePath = widgets.NewQLineEdit(nil)
 	s.pidFilePath.SetPlaceholderText("绝对路径")
 	s.pidFilePath.SetText(s.conf.PidFilePath())
 	s.pidFilePathMsg = NewColorLabelWithColor("不是合法的路径", "red")
 	s.pidFilePathMsg.Hide()
+	groupLayout.AddRow3("pid-file路径：", s.pidFilePath)
+	groupLayout.AddRow5(s.pidFilePathMsg)
 
 	// 检查内核版本
 	versionInfo := widgets.NewQLabel(nil, 0)
@@ -78,19 +82,8 @@ func (s *SSRConfigWidget) InitUI() {
 	} else {
 		versionInfo.SetText(fmt.Sprintf("内核版本不支持fast-open: %v", version))
 	}
-
-	groupLayout := widgets.NewQGridLayout2()
-	groupLayout.AddWidget(addrLabel, 0, 0, 0)
-	groupLayout.AddWidget(s.localAddr, 0, 1, 0)
-	groupLayout.AddWidget(s.localAddrMsg, 1, 0, 0)
-	groupLayout.AddWidget(portLabel, 2, 0, 0)
-	groupLayout.AddWidget(s.localPort, 2, 1, 0)
-	groupLayout.AddWidget(s.localPortMsg, 3, 0, 0)
-	groupLayout.AddWidget(pidFileLabel, 4, 0, 0)
-	groupLayout.AddWidget(s.pidFilePath, 4, 1, 0)
-	groupLayout.AddWidget(s.pidFilePathMsg, 5, 0, 0)
-	groupLayout.AddWidget(s.fastOpen, 6, 0, 0)
-	groupLayout.AddWidget(versionInfo, 7, 0, 0)
+	groupLayout.AddRow5(s.fastOpen)
+	groupLayout.AddRow5(versionInfo)
 
 	group.SetLayout(groupLayout)
 	mainLayout := widgets.NewQVBoxLayout()
