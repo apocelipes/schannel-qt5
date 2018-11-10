@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -43,7 +44,7 @@ func ConfigPath() (string, error) {
 		return "", ErrHOME
 	}
 
-	return home + string(os.PathSeparator) + configPath, nil
+	return filepath.Join(home, configPath), nil
 }
 
 // StoreConfig 将配置存储进ConfigPath路径的文件

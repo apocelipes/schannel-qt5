@@ -8,16 +8,34 @@ import (
 )
 
 func TestConfigPath(t *testing.T) {
-	// 设置HOME用于拼接测试
-	err := os.Setenv("HOME", "/home/testing")
-	if err != nil {
-		t.Errorf("set $HOME ERROR: %v\n", err)
+	testData := []*struct {
+		// 设置环境变量HOME的值
+		home string
+		res  string
+	}{
+		{
+			home: "/home/test",
+			res:  "/home/test/" + configPath,
+		},
+		{
+			home: "/home/test/",
+			res:  "/home/test/" + configPath,
+		},
 	}
 
-	if path, err := ConfigPath(); err != nil {
-		t.Errorf("ConfigPath return an ERROR: %v\n", err)
-	} else if path != "/home/testing/" + configPath {
-		t.Errorf("wrong path: %v", path)
+	for _, v := range testData {
+		err := os.Setenv("HOME", v.home)
+		if err != nil {
+			t.Fatalf("无法设置$HOME: %v\n", err)
+		}
+		res, err := ConfigPath()
+		if err != nil {
+			t.Fatalf("获取Config Path错误：%v\n", err)
+		}
+		if v.res != res {
+			format := "不正确的Config Path:\n\twant: %s\n\thave: %v\n"
+			t.Errorf(format, v.res, res)
+		}
 	}
 }
 

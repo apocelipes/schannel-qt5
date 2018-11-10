@@ -3,9 +3,28 @@ package models
 import (
 	"bytes"
 	"errors"
+	"os"
+	"path/filepath"
 
 	"github.com/go-xorm/xorm"
+
+	"schannel-qt5/config"
 )
+
+const (
+	// 数据库存放路径
+	databasePath = ".local/share/schannel-users.db"
+)
+
+// GetDBPath 获取数据库存放路径
+func GetDBPath() (string, error) {
+	home, exist := os.LookupEnv("HOME")
+	if !exist {
+		return "", config.ErrHOME
+	}
+
+	return filepath.Join(home, databasePath), nil
+}
 
 // User 用户表，将和使用量表关联
 type User struct {

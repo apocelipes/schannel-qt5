@@ -162,3 +162,35 @@ func TestDelPassword(t *testing.T) {
 		}
 	}
 }
+
+func TestGetDBPath(t *testing.T) {
+	testData := []*struct {
+		// 设置环境变量HOME的值
+		home string
+		res  string
+	}{
+		{
+			home: "/home/test",
+			res:  "/home/test/" + databasePath,
+		},
+		{
+			home: "/home/test/",
+			res:  "/home/test/" + databasePath,
+		},
+	}
+
+	for _, v := range testData {
+		err := os.Setenv("HOME", v.home)
+		if err != nil {
+			t.Fatalf("无法设置$HOME: %v\n", err)
+		}
+		res, err := GetDBPath()
+		if err != nil {
+			t.Fatalf("获取DB Path错误：%v\n", err)
+		}
+		if v.res != res {
+			format := "不正确的DB Path:\n\twant: %s\n\thave: %v\n"
+			t.Errorf(format, v.res, res)
+		}
+	}
+}

@@ -57,8 +57,8 @@ func decryptPassword(user string, crypted []byte) ([]byte, error) {
 // PKCS5Padding 将数据填充至合适的大小，以便加密算法处理
 func PKCS5Padding(origData []byte, blockSize int) []byte {
 	padding := blockSize - len(origData)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(origData, padtext...)
+	padText := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(origData, padText...)
 }
 
 // PKCS5UnPadding 去除填充
