@@ -88,6 +88,7 @@ func (dialog *NodeSelectDialog) InitUI() {
 	mainLayout.AddWidget(dialog.cancelButton, 2, 1, 0)
 	mainLayout.AddWidget(dialog.okButton, 2, 2, 0)
 	dialog.SetLayout(mainLayout)
+	dialog.SetWindowTitle("选择节点")
 }
 
 // getNodeNames 返回所有节点的名称，顺序与nodes一致

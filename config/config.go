@@ -54,7 +54,7 @@ func (u *UserConfig) StoreConfig() error {
 		return err
 	}
 
-	f, err := os.OpenFile(storePath, os.O_WRONLY|os.O_CREATE, 0664)
+	f, err := os.OpenFile(storePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
 		return err
 	}

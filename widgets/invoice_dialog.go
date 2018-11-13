@@ -66,12 +66,11 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	dialog.setTable()
 	dialog.table.ConnectItemClicked(dialog.setLink)
 
-	//TODO: 点击colorlabel也可以切换链接显示
-	/*dialog.table.ConnectCellClicked(func (row, col int) {
+	dialog.table.ConnectCellClicked(func(row, col int) {
 		invoice := dialog.invoices[row]
 		dialog.selected.SetText(fmt.Sprintf("选中第%d行", row+1))
 		dialog.link.SetText(invoice.Link)
-	})*/
+	})
 
 	// 设置不可编辑table
 	dialog.table.SetEditTriggers(widgets.QAbstractItemView__NoEditTriggers)
@@ -82,6 +81,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	vbox.AddWidget(dialog.infoBar, 0, 0)
 	dialog.SetLayout(vbox)
 	dialog.setDialogSize()
+	dialog.SetWindowTitle("账单详情")
 
 	return dialog
 }

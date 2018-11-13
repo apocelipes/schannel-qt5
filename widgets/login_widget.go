@@ -66,14 +66,18 @@ func (l *LoginWidget) InitUI() {
 	l.password = widgets.NewQLineEdit(nil)
 	l.password.SetPlaceholderText("密码")
 	l.password.SetEchoMode(widgets.QLineEdit__Password)
+
+	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)
 	// 设置第一个记录用户的密码
-	// 因为combox默认选择显示第一个name，不会触发信号
+	// 因为comboBox默认选择显示第一个name，不会触发信号
 	if len(users) != 0 {
 		info, err := models.GetUserPassword(l.db, names[0])
 		if err != nil {
 			l.logger.Println(err)
-		} else {
+		} else if info.Passwd != nil {
+			// 密码不为空，设置密码和选中记住密码
 			l.password.SetText(string(info.Passwd))
+			l.remember.SetChecked(true)
 		}
 	}
 
@@ -81,7 +85,6 @@ func (l *LoginWidget) InitUI() {
 	l.loginStatus = NewColorLabelWithColor("", "red")
 	l.loginStatus.Hide()
 
-	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)
 	loginButton := widgets.NewQPushButton2("登录", nil)
 	loginButton.ConnectClicked(l.checkLogin)
 
@@ -124,7 +127,8 @@ func (l *LoginWidget) checkLogin(_ bool) {
 			l.logger.Println(err)
 		}
 	} else {
-		if has, err := l.db.Where("password is not null").Exist(&models.User{Name: user}); err != nil {
+		// 如果未勾选，表示用户不想记住密码，已经记住的将会被设置为null
+		if has, err := l.db.Where("passwd is not null").Exist(&models.User{Name: user}); err != nil {
 			l.logger.Println(err)
 		} else if has {
 			if err := models.DelPassword(l.db, user); err != nil {

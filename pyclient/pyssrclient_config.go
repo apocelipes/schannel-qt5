@@ -90,7 +90,7 @@ func (c *ClientConfig) Load(path string) error {
 }
 
 func (c *ClientConfig) Store(path string) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0664)
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
 		return err
 	}
