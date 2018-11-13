@@ -6,12 +6,16 @@ A QT based GUI client for [schannel](https://schannel.net/) - written in Golang
 - quickly view service information
 - supports lots of user settings
 - simply & easy to use
+- freely configure the ssr client program
 
 ### Installation
 At first we need to install [thetheripe/qt](https://github.com/therecipe/qt)
 
 Then:
 ```bash
+go get -u github.com/go-xorm/xorm
+go get -u github.com/mattn/go-sqlite3
+go get -u github.com/PuerkitoBio/goquery
 cd $GOPATH/src
 git clone 'https://github.com/apocelipes/schannel-qt5'
 cd schannel-qt5/widgets && qtmoc
