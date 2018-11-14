@@ -13,7 +13,7 @@ var (
 	defaultStyle = "QLabel{color:black;}"
 )
 
-// ColorLabel 使用HTML显示彩色文字
+// ColorLabel 使用QSS显示彩色文字
 type ColorLabel struct {
 	widgets.QLabel
 
