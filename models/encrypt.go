@@ -17,41 +17,40 @@ func genKey(user string) []byte {
 }
 
 // encryptPassword 加密用户名密码，返回加密后的数据
-func encryptPassword(user string, password []byte) ([]byte, error) {
+func encryptPassword(user string, password string) (string, error) {
 	key := genKey(user)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	origData := PKCS5Padding(password, block.BlockSize())
+	origData := PKCS5Padding([]byte(password), block.BlockSize())
 	blockMode := cipher.NewCBCEncrypter(block, key)
 	crypted := make([]byte, len(origData))
 	blockMode.CryptBlocks(crypted, origData)
-	base := make([]byte, base64.StdEncoding.EncodedLen(len(crypted)))
-	base64.StdEncoding.Encode(base, crypted)
-	return base, nil
+	res := base64.StdEncoding.EncodeToString(crypted)
+	return res, nil
 }
 
 // decryptPassword 返回解密后的信息
-func decryptPassword(user string, crypted []byte) ([]byte, error) {
+func decryptPassword(user string, crypted string) (string, error) {
 	key := genKey(user)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	blockMode := cipher.NewCBCDecrypter(block, key)
-	unbase := make([]byte, base64.StdEncoding.DecodedLen(len(crypted)))
-	n, err := base64.StdEncoding.Decode(unbase, crypted)
+	unbase, err := base64.StdEncoding.DecodeString(crypted)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
+	n := len(unbase)
 	origData := make([]byte, n)
-	blockMode.CryptBlocks(origData, unbase[:n])
+	blockMode.CryptBlocks(origData, unbase)
 	origData = PKCS5UnPadding(origData)
-	return origData, nil
+	return string(origData), nil
 }
 
 // PKCS5Padding 将数据填充至合适的大小，以便加密算法处理

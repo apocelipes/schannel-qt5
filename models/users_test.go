@@ -3,12 +3,11 @@ package models
 import (
 	"testing"
 
-	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"os"
 
-	"github.com/go-xorm/xorm"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,12 +16,21 @@ const (
 	dbPath = "/tmp/db_users_test.db"
 )
 
+func init() {
+	orm.RegisterDataBase("default", "sqlite3", dbPath)
+	err := orm.RunSyncdb("default", false, true)
+	if err != nil {
+		panic(err)
+	}
+	orm.Debug = true
+}
+
 // initDB 初始化测试数据
-func initDB(t *testing.T) (*xorm.Engine, []*User) {
+func initDB(t *testing.T) (orm.Ormer, []*User) {
 	users := []*User{
 		{
 			Name:   "test@test.com",
-			Passwd: nil,
+			Passwd: "",
 		},
 		{
 			Name:   "test@example.com",
@@ -34,18 +42,11 @@ func initDB(t *testing.T) (*xorm.Engine, []*User) {
 		},
 	}
 
-	os.Remove(dbPath)
-	var err error
-	db, err := xorm.NewEngine("sqlite3", dbPath)
-	if err != nil {
-		t.Errorf("initDB: %v\n", err)
-	}
-
-	db.Sync2(&User{})
+	db := orm.NewOrm()
+	db.QueryTable(&User{}).Filter("Name__isnull", false).Delete()
 	for _, v := range users {
-		err := SetUserPassword(db, v.Name, v.Passwd)
-		if err != nil {
-			t.Errorf("initDB: %v\n", err)
+		if err := SetUserPassword(db, v.Name, v.Passwd); err != nil {
+			t.Fatalf("initdb error: %v\n", err)
 		}
 	}
 
@@ -53,7 +54,7 @@ func initDB(t *testing.T) (*xorm.Engine, []*User) {
 }
 
 // genPassword 生成随机密码
-func genPassword() []byte {
+func genPassword() string {
 	origData := make([]byte, 16)
 	n, err := rand.Read(origData)
 	if err != nil {
@@ -62,19 +63,18 @@ func genPassword() []byte {
 
 	pw := make([]byte, hex.EncodedLen(n))
 	hex.Encode(pw, origData[:n])
-	return pw
+	return string(pw)
 }
 
 func TestGetUserPassword(t *testing.T) {
 	db, users := initDB(t)
-	defer db.Close()
 
 	for _, v := range users {
 		user, err := GetUserPassword(db, v.Name)
 		if err != nil {
 			t.Errorf("get user: %s error: %v\n", v.Name, err)
 		}
-		if !bytes.Equal(user.Passwd, v.Passwd) {
+		if user.Passwd != v.Passwd {
 			format := "get user: %s password different\nhave: %v\n\twant: %v\n"
 			t.Errorf(format, v.Name, user.Passwd, v.Passwd)
 		}
@@ -83,7 +83,6 @@ func TestGetUserPassword(t *testing.T) {
 
 func TestSetUserPassword(t *testing.T) {
 	db, _ := initDB(t)
-	defer db.Close()
 
 	testData := []*struct {
 		// 用户对象
@@ -94,9 +93,9 @@ func TestSetUserPassword(t *testing.T) {
 		{
 			u: &User{
 				Name:   "example",
-				Passwd: nil,
+				Passwd: "",
 			},
-			inserted: false,
+			inserted: true,
 		},
 		{
 			u: &User{
@@ -108,7 +107,7 @@ func TestSetUserPassword(t *testing.T) {
 		{
 			u: &User{
 				Name:   "b",
-				Passwd: nil,
+				Passwd: "",
 			},
 			inserted: true,
 		},
@@ -124,7 +123,6 @@ func TestSetUserPassword(t *testing.T) {
 
 func TestGetAllUsers(t *testing.T) {
 	db, users := initDB(t)
-	defer db.Close()
 
 	u, err := GetAllUsers(db)
 	if err != nil {
@@ -140,10 +138,9 @@ func TestGetAllUsers(t *testing.T) {
 
 func TestDelPassword(t *testing.T) {
 	db, users := initDB(t)
-	defer db.Close()
 
 	for _, v := range users {
-		if v.Passwd != nil {
+		if v.Passwd != "" {
 			err := DelPassword(db, v.Name)
 			if err != nil {
 				format := "del %s password error: %v\n"
@@ -156,7 +153,7 @@ func TestDelPassword(t *testing.T) {
 				format := "del %s password error: %v\n"
 				t.Errorf(format, v.Name, err)
 			}
-			if u.Passwd != nil {
+			if u.Passwd != "" {
 				t.Errorf("del password failed: %v\n", u.Passwd)
 			}
 		}

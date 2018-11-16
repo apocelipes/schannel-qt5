@@ -1,12 +1,13 @@
 package models
 
 import (
-	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
+	"time"
 
-	"github.com/go-xorm/xorm"
+	"github.com/astaxie/beego/orm"
+	_ "github.com/mattn/go-sqlite3"
 
 	"schannel-qt5/config"
 )
@@ -15,6 +16,12 @@ const (
 	// 数据库存放路径
 	databasePath = ".local/share/schannel-users.db"
 )
+
+// 注册模型，设置数据库时区为UTC
+func init() {
+	orm.RegisterModel(&User{})
+	orm.DefaultTimeLoc = time.UTC
+}
 
 // GetDBPath 获取数据库存放路径
 func GetDBPath() (string, error) {
@@ -28,21 +35,20 @@ func GetDBPath() (string, error) {
 
 // User 用户表，将和使用量表关联
 type User struct {
-	Name   string `xorm:"pk"`
-	Passwd []byte `xorm:"blob"`
+	Name   string `orm:"size(100);pk"`
+	Passwd string `orm:"size(100);null"`
 }
 
 // GetUserPassword 获取用户名以及密码
-func GetUserPassword(db *xorm.Engine, user string) (*User, error) {
-	u := User{Name: user}
-	if has, err := db.Get(&u); err != nil {
+func GetUserPassword(db orm.Ormer, user string) (*User, error) {
+	u := &User{Name: user}
+
+	if err := db.Read(u); err != nil {
 		return nil, err
-	} else if !has {
-		return nil, xorm.ErrNotExist
 	}
 
 	// 密码解密
-	if u.Passwd != nil {
+	if u.Passwd != "" {
 		data, err := decryptPassword(u.Name, u.Passwd)
 		if err != nil {
 			return nil, err
@@ -50,18 +56,18 @@ func GetUserPassword(db *xorm.Engine, user string) (*User, error) {
 		u.Passwd = data
 	}
 
-	return &u, nil
+	return u, nil
 }
 
 // SetUserPassword 将用户名密码保存
 // password为nil表示不记住密码
-func SetUserPassword(db *xorm.Engine, user string, password []byte) error {
+func SetUserPassword(db orm.Ormer, user string, password string) error {
 	u := &User{
 		Name:   user,
 		Passwd: password,
 	}
 
-	if u.Passwd != nil {
+	if u.Passwd != "" {
 		data, err := encryptPassword(u.Name, u.Passwd)
 		if err != nil {
 			return err
@@ -69,20 +75,23 @@ func SetUserPassword(db *xorm.Engine, user string, password []byte) error {
 		u.Passwd = data
 	}
 
-	if has, err := db.Exist(&User{Name: u.Name}); err != nil {
-		return err
-	} else if has {
+	if db.QueryTable(u).Filter("Name", u.Name).Exist() {
 		old := &User{Name: u.Name}
-		db.Get(&old)
+		db.QueryTable(old).Filter("Name", old.Name).One(old)
 		// 和旧值一样，不更新，返回error
-		if bytes.Equal(u.Passwd, old.Passwd) {
+		if u.Passwd == old.Passwd {
 			return errors.New("insert same values")
 		}
-		db.Where("name = ?", u.Name).Cols("passwd").Update(u)
+		_, err := db.QueryTable(u).Filter("Name", u.Name).Update(orm.Params{
+			"Passwd": u.Passwd,
+		})
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
-	if _, err := db.InsertOne(u); err != nil {
+	if _, err := db.Insert(u); err != nil {
 		return err
 	}
 
@@ -90,9 +99,10 @@ func SetUserPassword(db *xorm.Engine, user string, password []byte) error {
 }
 
 // GetAllUsers 返回所有user，包括未
-func GetAllUsers(db *xorm.Engine) ([]*User, error) {
+func GetAllUsers(db orm.Ormer) ([]*User, error) {
 	users := make([]*User, 0)
-	if err := db.Find(&users); err != nil {
+
+	if _, err := db.QueryTable(&User{}).All(&users); err != nil {
 		return nil, err
 	}
 
@@ -100,9 +110,12 @@ func GetAllUsers(db *xorm.Engine) ([]*User, error) {
 }
 
 // DelPassword 将指定user的password设置为null
-func DelPassword(db *xorm.Engine, user string) error {
+func DelPassword(db orm.Ormer, user string) error {
 	u := &User{Name: user}
-	_, err := db.Where("name = ?", user).Cols("passwd").Update(u)
+
+	_, err := db.QueryTable(u).Filter("Name", u.Name).Update(orm.Params{
+		"Passwd": "",
+	})
 	if err != nil {
 		return err
 	}

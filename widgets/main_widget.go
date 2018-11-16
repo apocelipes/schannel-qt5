@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-xorm/xorm"
+	"github.com/astaxie/beego/orm"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
@@ -28,7 +28,7 @@ type MainWidget struct {
 	// 用户配置
 	conf *config.UserConfig
 	// 存储用户登录信息和使用信息
-	db *xorm.Engine
+	db orm.Ormer
 	// 用户名
 	user string
 	// 日志记录
@@ -36,7 +36,7 @@ type MainWidget struct {
 }
 
 // NewMainWidget2 创建主界面
-func NewMainWidget2(conf *config.UserConfig, logger *log.Logger, db *xorm.Engine) *MainWidget {
+func NewMainWidget2(conf *config.UserConfig, logger *log.Logger, db orm.Ormer) *MainWidget {
 	widget := NewMainWidget(nil, 0)
 	widget.conf = conf
 	widget.db = db

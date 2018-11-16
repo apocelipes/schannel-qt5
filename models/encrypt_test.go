@@ -21,12 +21,12 @@ func TestEncryptDecrypt(t *testing.T) {
 		},
 		{
 			user:     "sample1",
-			password: string(genPassword()),
+			password: genPassword(),
 		},
 	}
 
 	for _, v := range testData {
-		crypted, err := encryptPassword(v.user, []byte(v.password))
+		crypted, err := encryptPassword(v.user, v.password)
 		if err != nil {
 			t.Errorf("encrypto: %v\n", err)
 		}
@@ -34,7 +34,7 @@ func TestEncryptDecrypt(t *testing.T) {
 		if err != nil {
 			t.Errorf("decrypto: %v\n", err)
 		}
-		if string(password) != v.password {
+		if password != v.password {
 			format := "password not equal, old: %s, new: %s\n"
 			t.Errorf(format, v.password, password)
 		}

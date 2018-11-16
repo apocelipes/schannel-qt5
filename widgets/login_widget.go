@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-xorm/xorm"
+	"github.com/astaxie/beego/orm"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
@@ -29,11 +29,11 @@ type LoginWidget struct {
 	// 用户数据
 	conf   *config.UserConfig
 	logger *log.Logger
-	db     *xorm.Engine
+	db     orm.Ormer
 }
 
 // NewLoginWidget2 根据config，logger，db生成登录控件
-func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db *xorm.Engine) *LoginWidget {
+func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db orm.Ormer) *LoginWidget {
 	if conf == nil || logger == nil {
 		return nil
 	}
@@ -74,7 +74,7 @@ func (l *LoginWidget) InitUI() {
 		info, err := models.GetUserPassword(l.db, names[0])
 		if err != nil {
 			l.logger.Println(err)
-		} else if info.Passwd != nil {
+		} else if info.Passwd != "" {
 			// 密码不为空，设置密码和选中记住密码
 			l.password.SetText(string(info.Passwd))
 			l.remember.SetChecked(true)
@@ -123,14 +123,14 @@ func (l *LoginWidget) checkLogin(_ bool) {
 
 	// 登陆成功，记住密码
 	if l.remember.IsChecked() {
-		if err := models.SetUserPassword(l.db, user, []byte(passwd)); err != nil {
+		if err := models.SetUserPassword(l.db, user, passwd); err != nil {
 			l.logger.Println(err)
 		}
 	} else {
 		// 如果未勾选，表示用户不想记住密码，已经记住的将会被设置为null
-		if has, err := l.db.Where("passwd is not null").Exist(&models.User{Name: user}); err != nil {
-			l.logger.Println(err)
-		} else if has {
+		cond := orm.NewCondition()
+		cond = cond.And("Passwd__isnull", false).And("Name", user)
+		if l.db.QueryTable(&models.User{}).SetCond(cond).Exist() {
 			if err := models.DelPassword(l.db, user); err != nil {
 				l.logger.Printf("delete %v password failed: %v\n", user, err)
 			}
@@ -157,7 +157,7 @@ func (l *LoginWidget) setPassword(user string) {
 		// 输入的用户名未记录
 		l.logger.Println(err)
 		l.username.SetCurrentText(user)
-	} else if info.Passwd != nil {
+	} else if info.Passwd != "" {
 		l.password.SetText(string(info.Passwd))
 		l.remember.SetChecked(true)
 		return

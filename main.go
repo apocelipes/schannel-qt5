@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-xorm/xorm"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
 	std_widgets "github.com/therecipe/qt/widgets"
 
@@ -19,6 +19,18 @@ const (
 	// 日志主前缀
 	prefix = "schannel-qt5: "
 )
+
+func init() {
+	dbPath, err := models.GetDBPath()
+	if err != nil {
+		panic(err)
+	}
+	orm.RegisterDataBase("default", "sqlite3", dbPath)
+	err = orm.RunSyncdb("default", false, false)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func main() {
 	app := std_widgets.NewQApplication(len(os.Args), os.Args)
@@ -42,19 +54,8 @@ func main() {
 	defer logFile.Close()
 	logger := log.New(logFile, prefix, log.LstdFlags|log.Lshortfile)
 
-	// 初始化用户数据库
-	dbPath, err := models.GetDBPath()
-	if err != nil {
-		logger.Fatalf("获取数据库存放路径失败: %v\n", err)
-	}
-	db, err := xorm.NewEngine("sqlite3", dbPath)
-	if err != nil {
-		logger.Fatalf("数据库初始化失败: %v\n", err)
-	}
-	defer db.Close()
-	if err := db.Sync2(&models.User{}); err != nil {
-		logger.Fatalf("数据库同步失败：%v\n", err)
-	}
+	// 获取用户数据库连接
+	db := orm.NewOrm()
 
 	// 初始化GUI
 	mainWindow := widgets.NewMainWidget2(conf, logger, db)
