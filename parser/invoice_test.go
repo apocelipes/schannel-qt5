@@ -8,7 +8,7 @@ import (
 
 func TestInvoiceGetStatus(t *testing.T) {
 	// 与过期时间比较
-	now := getCurrentDay()
+	now := GetCurrentDay()
 
 	testData := []*struct {
 		// 账单信息

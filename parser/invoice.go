@@ -44,7 +44,7 @@ func (i *Invoice) GetStatus() (string, bool) {
 		flag = true
 	}
 
-	current := getCurrentDay()
+	current := GetCurrentDay()
 	if current.After(i.ExpireDate) {
 		msg += "，账单过期"
 	}
@@ -52,8 +52,8 @@ func (i *Invoice) GetStatus() (string, bool) {
 	return msg, flag
 }
 
-// getCurrentDay 返回当前的时间，精确到day
-func getCurrentDay() time.Time {
+// GetCurrentDay 返回当前的时间，精确到day
+func GetCurrentDay() time.Time {
 	// Now和Truncate已经使用location处理过time
 	// Truncate会自动设置tz，导致无法截取到正确日期（根据UTC偏移量导致日期提前或者延迟）
 	dayLocal := time.Now().Truncate(24 * time.Hour)

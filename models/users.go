@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
@@ -17,10 +16,9 @@ const (
 	databasePath = ".local/share/schannel-users.db"
 )
 
-// 注册模型，设置数据库时区为UTC
+// 注册模型
 func init() {
 	orm.RegisterModel(&User{})
-	orm.DefaultTimeLoc = time.UTC
 }
 
 // GetDBPath 获取数据库存放路径

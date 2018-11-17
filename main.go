@@ -25,6 +25,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	orm.Debug = false
 	orm.RegisterDataBase("default", "sqlite3", dbPath)
 	err = orm.RunSyncdb("default", false, false)
 	if err != nil {

@@ -68,7 +68,8 @@ func (sw *SummarizedWidget) InitUI() {
 	sw.servicePanel = NewServicePanel2(sw.user, ssrInfo)
 	sw.invoicePanel = NewInvoicePanelWithData(sw.dataBridge.Invoices())
 	sw.switchPanel = NewSSRSwitchPanel2(sw.conf, ssrInfo.Nodes)
-	sw.usedPanel = NewUsedPanelWithInfo(ssrInfo)
+	logger := sw.dataBridge.GetLogger()
+	sw.usedPanel = NewUsedPanelWithInfo(sw.user, ssrInfo, logger)
 
 	updateButton := widgets.NewQPushButton2("刷新", nil)
 	// 通知上层控件更新sw的service

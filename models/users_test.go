@@ -18,15 +18,17 @@ const (
 
 func init() {
 	orm.RegisterDataBase("default", "sqlite3", dbPath)
-	err := orm.RunSyncdb("default", false, true)
-	if err != nil {
-		panic(err)
-	}
 	orm.Debug = true
 }
 
-// initDB 初始化测试数据
-func initDB(t *testing.T) (orm.Ormer, []*User) {
+// initUserDB 初始化测试数据
+func initUserDB(t *testing.T) (orm.Ormer, []*User) {
+	os.Truncate(dbPath, 0)
+	err := orm.RunSyncdb("default", false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	users := []*User{
 		{
 			Name:   "test@test.com",
@@ -43,7 +45,6 @@ func initDB(t *testing.T) (orm.Ormer, []*User) {
 	}
 
 	db := orm.NewOrm()
-	db.QueryTable(&User{}).Filter("Name__isnull", false).Delete()
 	for _, v := range users {
 		if err := SetUserPassword(db, v.Name, v.Passwd); err != nil {
 			t.Fatalf("initdb error: %v\n", err)
@@ -67,7 +68,7 @@ func genPassword() string {
 }
 
 func TestGetUserPassword(t *testing.T) {
-	db, users := initDB(t)
+	db, users := initUserDB(t)
 
 	for _, v := range users {
 		user, err := GetUserPassword(db, v.Name)
@@ -82,7 +83,7 @@ func TestGetUserPassword(t *testing.T) {
 }
 
 func TestSetUserPassword(t *testing.T) {
-	db, _ := initDB(t)
+	db, _ := initUserDB(t)
 
 	testData := []*struct {
 		// 用户对象
@@ -122,7 +123,7 @@ func TestSetUserPassword(t *testing.T) {
 }
 
 func TestGetAllUsers(t *testing.T) {
-	db, users := initDB(t)
+	db, users := initUserDB(t)
 
 	u, err := GetAllUsers(db)
 	if err != nil {
@@ -137,7 +138,7 @@ func TestGetAllUsers(t *testing.T) {
 }
 
 func TestDelPassword(t *testing.T) {
-	db, users := initDB(t)
+	db, users := initUserDB(t)
 
 	for _, v := range users {
 		if v.Passwd != "" {
