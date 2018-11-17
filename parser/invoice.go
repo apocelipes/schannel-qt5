@@ -54,17 +54,8 @@ func (i *Invoice) GetStatus() (string, bool) {
 
 // GetCurrentDay 返回当前的时间，精确到day
 func GetCurrentDay() time.Time {
-	// Now和Truncate已经使用location处理过time
-	// Truncate会自动设置tz，导致无法截取到正确日期（根据UTC偏移量导致日期提前或者延迟）
-	dayLocal := time.Now().Truncate(24 * time.Hour)
-	offset := offsetDuration(dayLocal)
-	// 多出/减少的时间需要减去/加上，所以取负值
-	return dayLocal.Add(-offset)
-}
-
-// offsetDuration 计算t的时区与UTC的时差，返回偏移的time.Hour
-func offsetDuration(t time.Time) time.Duration {
-	_, offset := t.Zone()
-	// offset为秒数
-	return time.Duration(offset) / 3600 * time.Hour
+	timeFormat := "2006-01-02"
+	dayText := time.Now().Format(timeFormat)
+	day, _ := time.ParseInLocation(timeFormat, dayText, time.Local)
+	return day
 }
