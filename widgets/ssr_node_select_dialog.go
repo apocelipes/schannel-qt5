@@ -82,9 +82,9 @@ func (dialog *NodeSelectDialog) InitUI() {
 	mainLayout.AddLayout(listLayout, 0, 0, 0)
 	mainLayout.AddWidget3(dialog.detail, 0, 1, 1, 2, 0)
 	// 水平分割线
-	vFrame := widgets.NewQFrame(nil, 0)
-	vFrame.SetFrameShape(widgets.QFrame__VLine)
-	mainLayout.AddWidget3(vFrame, 1, 0, 1, 3, 0)
+	hFrame := widgets.NewQFrame(nil, 0)
+	hFrame.SetFrameStyle(int(widgets.QFrame__HLine)|int(widgets.QFrame__Sunken))
+	mainLayout.AddWidget3(hFrame, 1, 0, 1, 3, 0)
 	mainLayout.AddWidget(dialog.cancelButton, 2, 1, 0)
 	mainLayout.AddWidget(dialog.okButton, 2, 2, 0)
 	dialog.SetLayout(mainLayout)

@@ -2,7 +2,9 @@ package widgets
 
 import (
 	"errors"
+	"math"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -157,4 +159,35 @@ func getGeoName(name string) string {
 	}
 
 	return strings.Join(areaName, "-")
+}
+
+// computeSizeUnit 计算图表适用的size单位，为KB，MB或GB
+// 因为月底网站会清空上月使用数据，所以选择最大的作为计量单位选择的依据
+// 返回单位名称和相对KB的换算倍率
+func computeSizeUnit(dataSet []int) (int, string) {
+	sort.Ints(dataSet)
+	max := dataSet[len(dataSet)-1]
+	// 判断单位
+	if max/GB != 0 {
+		return GB, "GB"
+	} else if max/MB != 0 {
+		return MB, "MB"
+	}
+
+	return KB, "KB"
+}
+
+// computeRange 计算坐标轴的range，四舍五入为1位小数后+/-0.5，使折线平滑
+func computeRange(dataSet []int, ratio int) (float64, float64) {
+	data := make([]float64, 0, len(dataSet))
+	for _, v := range dataSet {
+		value := float64(v) / float64(ratio)
+		data = append(data, value)
+	}
+	sort.Float64s(data)
+
+	max := math.Trunc(data[len(data)-1] * 10 + 0.5) / 10
+	min := math.Trunc(data[0] * 10 + 0.5) / 10
+
+	return math.Max(min - 0.5, 0), max + 0.5
 }

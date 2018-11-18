@@ -7,13 +7,14 @@ A QT based GUI client for [schannel](https://schannel.net/) - written in Golang
 - supports lots of user settings
 - simply & easy to use
 - freely configure the ssr client program
+- use charts to show data more clearly
 
 ### Installation
 At first we need to install [thetheripe/qt](https://github.com/therecipe/qt)
 
 Then:
 ```bash
-go get -u github.com/go-xorm/xorm
+go get -u github.com/astaxie/beego/orm
 go get -u github.com/mattn/go-sqlite3
 go get -u github.com/PuerkitoBio/goquery
 cd $GOPATH/src
@@ -39,15 +40,19 @@ select nodes:
 
 service info & client switch:
 
-![service](screenshots/nodes.png)
+![service](screenshots/service.jpg)
 
 user settings:
 
 ![settings](screenshots/settings.png)
 
+data charts:
+
+![charts](screenshots/charts.png)
+
 ### Todo:
-- add charts to display daily usage
 - add delete user button in LoginWidget
+- more tests
 
 Welcome feedback questions and submit PRs,
 

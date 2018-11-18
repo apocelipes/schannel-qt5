@@ -70,9 +70,19 @@ func (u *UsedPanel) InitUI() {
 	u.uploadBar = NewProgressBarWithMark(u.total, u.upload, computeRatio(u.total))
 	u.downloadBar = NewProgressBarWithMark(u.total, u.download, computeRatio(u.total))
 
+	chartsDialogButton := widgets.NewQPushButton2("统计图", nil)
+	chartsDialogButton.ConnectClicked(func(_ bool) {
+		chartsDialog := NewChartsDialog2(u.user, u.info.Name, u.logger, u)
+		chartsDialog.Show()
+	})
+
 	// 布局管理
 	vbox := widgets.NewQVBoxLayout()
-	vbox.AddWidget(u.totalLabel, 0, 0)
+	hbox := widgets.NewQHBoxLayout()
+	hbox.AddWidget(u.totalLabel, 0, 0)
+	hbox.AddStretch(0)
+	hbox.AddWidget(chartsDialogButton, 0, 0)
+	vbox.AddLayout(hbox, 0)
 	vbox.AddSpacing(0)
 	vbox.AddWidget(u.usedLabel, 0, 0)
 	vbox.AddWidget(u.usedBar, 0, 0)
@@ -98,7 +108,7 @@ func (u *UsedPanel) saveUsedAmount() {
 	if err != nil {
 		u.logger.Fatalf("save used amound error: %v\n", err)
 	}
-	u.logger.Printf("saved used_amount success")
+	u.logger.Printf("saved used_amount success, 记录日期: %v\n", now)
 }
 
 // setData 将used转换成int并设置给widget，随后存入数据库
