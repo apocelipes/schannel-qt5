@@ -178,7 +178,17 @@ func computeSizeUnit(dataSet []int) (int, string) {
 }
 
 // computeRange 计算坐标轴的range，四舍五入为1位小数后+/-0.5，使折线平滑
-func computeRange(dataSet []int, ratio int) (float64, float64) {
+func computeRange(dataSet []int, ratio int, unit string) (float64, float64) {
+	var tuning float64
+	switch unit {
+	case "GB":
+		tuning = 0.1
+	case "MB":
+		tuning = 0.5
+	case "KB":
+		tuning = 5
+	}
+
 	data := make([]float64, 0, len(dataSet))
 	for _, v := range dataSet {
 		value := float64(v) / float64(ratio)
@@ -189,5 +199,5 @@ func computeRange(dataSet []int, ratio int) (float64, float64) {
 	max := math.Trunc(data[len(data)-1] * 10 + 0.5) / 10
 	min := math.Trunc(data[0] * 10 + 0.5) / 10
 
-	return math.Max(min - 0.5, 0), max + 0.5
+	return math.Max(min - tuning, 0), max + tuning
 }

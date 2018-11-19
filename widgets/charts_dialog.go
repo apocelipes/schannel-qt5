@@ -139,7 +139,7 @@ func (dialog *ChartsDialog) CreateUploadLineChart() *charts.QChartView {
 
 	axisY := charts.NewQValueAxis(nil)
 	axisY.SetTitleText(fmt.Sprintf("上传（%s）", unit))
-	axisY.SetRange(computeRange(dataSet, ratio))
+	axisY.SetRange(computeRange(dataSet, ratio, unit))
 	chart.AddAxis(axisY, core.Qt__AlignRight)
 
 	line.AttachAxis(axisX)
@@ -180,7 +180,7 @@ func (dialog *ChartsDialog) CreateDownloadLineChart() *charts.QChartView {
 
 	axisY := charts.NewQValueAxis(nil)
 	axisY.SetTitleText(fmt.Sprintf("下载（%s）", unit))
-	axisY.SetRange(computeRange(dataSet, ratio))
+	axisY.SetRange(computeRange(dataSet, ratio, unit))
 	chart.AddAxis(axisY, core.Qt__AlignLeft)
 
 	line.AttachAxis(axisX)

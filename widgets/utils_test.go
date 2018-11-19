@@ -173,30 +173,34 @@ func TestComputeRange(t *testing.T) {
 	testData := []*struct {
 		data     []int
 		ratio    int
+		unit     string
 		min, max float64
 	}{
 		{
 			data:  []int{1, 10, 2},
 			ratio: KB,
-			min:   0.5,
-			max:   10.5,
+			unit:  "KB",
+			min:   0,
+			max:   15.0,
 		},
 		{
 			data:  []int{1900 * KB, 100 * MB},
 			ratio: MB,
+			unit:  "MB",
 			min:   1.4,
 			max:   100.5,
 		},
 		{
 			data:  []int{1782580 * KB, 2590 * MB, 2 * GB},
 			ratio: GB,
-			min:   1.2,
-			max:   3.0,
+			unit:  "GB",
+			min:   1.6,
+			max:   2.6,
 		},
 	}
 
 	for _, v := range testData {
-		min, max := computeRange(v.data, v.ratio)
+		min, max := computeRange(v.data, v.ratio, v.unit)
 		if !floatEqual(min, v.min) {
 			format := "range min wrong:\n\twant: %v\n\thave: %v\n"
 			t.Errorf(format, v.min, min)
