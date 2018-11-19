@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"fmt"
+	"github.com/therecipe/qt/core"
 	"strconv"
 
 	"github.com/therecipe/qt/widgets"
@@ -82,6 +83,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	dialog.SetLayout(vbox)
 	dialog.setDialogSize()
 	dialog.SetWindowTitle("账单详情")
+	dialog.SetAttribute(core.Qt__WA_DeleteOnClose, true)
 
 	return dialog
 }

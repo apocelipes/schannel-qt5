@@ -112,6 +112,9 @@ func (s *SSRSwitchPanel) InitUI() {
 			s.currentNode = dialog.CurrentNode
 			s.nodeInfo.DataRefresh(s.currentNode)
 		}
+		// goqt无法自动释放QDialog
+		// 且此处不适合DeleteOnClose，所以需要手动调用DestroyNodeSelectDialog
+		dialog.DestroyNodeSelectDialog()
 	})
 	s.switchButton = widgets.NewQPushButton(nil)
 	s.setSwitchLabel()
