@@ -2,9 +2,9 @@ package widgets
 
 import (
 	"fmt"
-	"github.com/therecipe/qt/core"
 	"strconv"
 
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/parser"
