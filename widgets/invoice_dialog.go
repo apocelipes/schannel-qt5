@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
@@ -16,6 +17,8 @@ type InvoiceDialog struct {
 
 	table   *widgets.QTableWidget
 	infoBar *widgets.QStatusBar
+	// 是否在选中时复制到剪贴板
+	copy2Clipboard *widgets.QCheckBox
 	// 选中的行数
 	selected *widgets.QLabel
 	// 选中的链接
@@ -48,6 +51,9 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	dialog.infoBar.AddPermanentWidget(dialog.selected, 0)
 	dialog.infoBar.AddPermanentWidget(dialog.link, 0)
 
+	dialog.copy2Clipboard = widgets.NewQCheckBox2("将链接复制到剪贴板", nil)
+	dialog.copy2Clipboard.SetChecked(false)
+
 	// 初始化table，数据已经被排序
 	dialog.table = widgets.NewQTableWidget(nil)
 	// 设置行数，不设置将不显示任何数据
@@ -71,6 +77,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 		invoice := dialog.invoices[row]
 		dialog.selected.SetText(fmt.Sprintf("选中第%d行", row+1))
 		dialog.link.SetText(invoice.Link)
+		dialog.copyLink(row)
 	})
 
 	// 设置不可编辑table
@@ -78,6 +85,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 
 	vbox := widgets.NewQVBoxLayout()
 	vbox.AddWidget(dialog.table, 0, 0)
+	vbox.AddWidget(dialog.copy2Clipboard, 0, core.Qt__AlignLeft)
 	vbox.AddStretch(0)
 	vbox.AddWidget(dialog.infoBar, 0, 0)
 	dialog.SetLayout(vbox)
@@ -138,4 +146,13 @@ func (dialog *InvoiceDialog) setLink(item *widgets.QTableWidgetItem) {
 	invoice := dialog.invoices[index]
 	dialog.selected.SetText(fmt.Sprintf("选中第%d行", index+1))
 	dialog.link.SetText(invoice.Link)
+	dialog.copyLink(index)
+}
+
+// copyLink 如果勾选了copy2Clipboard则将link复制到系统剪贴板
+func (dialog *InvoiceDialog) copyLink(index int) {
+	if dialog.copy2Clipboard.IsChecked() {
+		clip := gui.QGuiApplication_Clipboard()
+		clip.SetText(dialog.invoices[index].Link, gui.QClipboard__Clipboard)
+	}
 }
