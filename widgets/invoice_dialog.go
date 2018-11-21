@@ -53,6 +53,13 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 
 	dialog.copy2Clipboard = widgets.NewQCheckBox2("将链接复制到剪贴板", nil)
 	dialog.copy2Clipboard.SetChecked(false)
+	// 选中时如果已经选择了Link则进行复制
+	dialog.copy2Clipboard.ConnectClicked(func(_ bool) {
+		link := dialog.link.Text()
+		if dialog.copy2Clipboard.IsChecked() && link != "" {
+			dialog.copyLink(link)
+		}
+	})
 
 	// 初始化table，数据已经被排序
 	dialog.table = widgets.NewQTableWidget(nil)
@@ -77,7 +84,7 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 		invoice := dialog.invoices[row]
 		dialog.selected.SetText(fmt.Sprintf("选中第%d行", row+1))
 		dialog.link.SetText(invoice.Link)
-		dialog.copyLink(row)
+		dialog.copyLink(invoice.Link)
 	})
 
 	// 设置不可编辑table
@@ -146,13 +153,13 @@ func (dialog *InvoiceDialog) setLink(item *widgets.QTableWidgetItem) {
 	invoice := dialog.invoices[index]
 	dialog.selected.SetText(fmt.Sprintf("选中第%d行", index+1))
 	dialog.link.SetText(invoice.Link)
-	dialog.copyLink(index)
+	dialog.copyLink(invoice.Link)
 }
 
 // copyLink 如果勾选了copy2Clipboard则将link复制到系统剪贴板
-func (dialog *InvoiceDialog) copyLink(index int) {
+func (dialog *InvoiceDialog) copyLink(link string) {
 	if dialog.copy2Clipboard.IsChecked() {
 		clip := gui.QGuiApplication_Clipboard()
-		clip.SetText(dialog.invoices[index].Link, gui.QClipboard__Clipboard)
+		clip.SetText(link, gui.QClipboard__Clipboard)
 	}
 }
