@@ -42,10 +42,12 @@ type SSRSwitchPanel struct {
 	conf      *config.UserConfig
 	// 可用节点信息
 	nodes []*parser.SSRNode
+
+	logger *log.Logger
 }
 
 // NewSSRSwitchPanel2 创建ssr开关面板组件
-func NewSSRSwitchPanel2(conf *config.UserConfig, nodes []*parser.SSRNode) *SSRSwitchPanel {
+func NewSSRSwitchPanel2(conf *config.UserConfig, nodes []*parser.SSRNode, logger *log.Logger) *SSRSwitchPanel {
 	if conf == nil || nodes == nil {
 		return nil
 	}
@@ -55,17 +57,18 @@ func NewSSRSwitchPanel2(conf *config.UserConfig, nodes []*parser.SSRNode) *SSRSw
 	panel.nodes = make([]*parser.SSRNode, len(nodes))
 	copy(panel.nodes, nodes)
 	panel.SortNode()
+	panel.logger = logger
 
 	panel.ssrClient = ssr.NewLauncher("python", panel.conf)
 	if panel.ssrClient == nil {
-		log.Println("ssr client created failed")
+		panel.logger.Println("ssr client created failed")
 		return nil
 	}
 
 	panel.currentNode = &parser.SSRNode{}
 	nodePath, err := panel.conf.SSRNodeConfigPath.AbsPath()
 	if err != nil {
-		log.Println("node load failed: ", err)
+		panel.logger.Println("node load failed: ", err)
 		return nil
 	}
 	panel.currentNode.Load(nodePath)
@@ -169,6 +172,7 @@ func (s *SSRSwitchPanel) setConnStat() {
 	if err := s.ssrClient.ConnectionCheck(5 * time.Second); err != nil {
 		errInfo := fmt.Sprintf("error: %v", err)
 		s.connStat.SetColorText(errInfo, "red")
+		s.logger.Println(errInfo)
 		return
 	}
 
@@ -195,6 +199,7 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 	s.conf = conf
 	s.ssrClient = ssr.NewLauncher("python", s.conf)
 	if s.ssrClient == nil {
+		s.logger.Println("ssr switch DataRefresh: 初始化ssr客户端错误")
 		errMsg := widgets.NewQErrorMessage(nil)
 		// TODO 更详细的错误信息
 		errMsg.ShowMessage("初始化ssr客户端错误")
