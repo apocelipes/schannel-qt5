@@ -59,9 +59,43 @@ func (l *LoginWidget) InitUI() {
 	for _, v := range users {
 		names = append(names, v.Name)
 	}
-	l.username.AddItems(names)
-	// 实现记住用户密码
-	l.username.ConnectCurrentTextChanged(l.setPassword)
+	userList := widgets.NewQListWidget(nil)
+	// 设置combobox代理
+	l.username.SetModel(userList.Model())
+	l.username.SetView(userList)
+	for _, name := range names {
+		accountItem := NewAccountItem2(name)
+		// ComboBox处理item被选中和点击删除按钮
+		accountItem.ConnectShowAccount(func(userName string) {
+			l.username.HidePopup()
+			for i, v := range names {
+				if v == userName {
+					l.username.SetCurrentIndex(i)
+					l.username.SetCurrentText(userName)
+					break
+				}
+			}
+		})
+
+		accountItem.ConnectRemoveAccount(func(userName string) {
+			l.username.HidePopup()
+			// listWidget中的顺序和names一致
+			for i, v := range names {
+				if userName == v {
+					userList.TakeItem(i)
+					break
+				}
+			}
+
+			err := models.DelUser(l.db, userName)
+			if err != nil {
+				l.logger.Fatal("删除用户失败:", userName, err)
+			}
+		})
+
+		listItem := widgets.NewQListWidgetItem(userList, 0)
+		userList.SetItemWidget(listItem, accountItem)
+	}
 
 	l.password = widgets.NewQLineEdit(nil)
 	l.password.SetPlaceholderText("密码")
@@ -77,9 +111,12 @@ func (l *LoginWidget) InitUI() {
 		} else if info.Passwd != "" {
 			// 密码不为空，设置密码和选中记住密码
 			l.password.SetText(string(info.Passwd))
+			l.username.SetCurrentText(info.Name)
 			l.remember.SetChecked(true)
 		}
 	}
+	// 实现记住用户密码
+	l.username.ConnectCurrentTextChanged(l.setPassword)
 
 	// 空的ColorLabel，预备填充错误信息
 	l.loginStatus = NewColorLabelWithColor("", "red")

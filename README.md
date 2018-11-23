@@ -51,7 +51,10 @@ data charts:
 ![charts](screenshots/charts.png)
 
 ### Todo:
-- add delete user button in LoginWidget
+- add dialog to verify whether to delete a user
+- add dialog to confirm whether to save the configuration
+- support system tray
+- more clearly document
 - more tests
 
 Welcome feedback questions and submit PRs,
