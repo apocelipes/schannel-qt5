@@ -120,3 +120,10 @@ func DelPassword(db orm.Ormer, user string) error {
 
 	return nil
 }
+
+// DelUser 删除名字与name相同的User，同时会删除UserAmount记录
+func DelUser(db orm.Ormer, name string) error {
+	user := &User{Name: name}
+	_, err := db.QueryTable(user).Filter("Name", user.Name).Delete()
+	return err
+}

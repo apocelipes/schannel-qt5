@@ -192,3 +192,14 @@ func TestGetDBPath(t *testing.T) {
 		}
 	}
 }
+
+func TestDelUser(t *testing.T) {
+	db, users := initUserDB(t)
+	for _, v := range users {
+		err := DelUser(db, v.Name)
+		if err != nil {
+			format := "DelUser error: %+v\n"
+			t.Errorf(format, v)
+		}
+	}
+}
