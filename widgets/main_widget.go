@@ -63,6 +63,8 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 	m.dataBridge = NewDataBridge(cookies, m.conf.Proxy.String(), m.logger)
 	// 删除login，因为目前只有login一个widget所以index是0
 	m.tab.RemoveTab(0)
+	// 移动到左上角，避免窗口因较长显示不完整
+	m.Move2(0, 0)
 
 	m.setting = NewConfigWidget2(m.conf)
 	// 可能存在多个服务

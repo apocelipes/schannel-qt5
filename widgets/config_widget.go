@@ -157,8 +157,8 @@ func (w *ConfigWidget) InitUI() {
 	// 防止Grid被过度拉伸
 	rightLayout.AddStretch(0)
 	topLayout := widgets.NewQHBoxLayout()
-	topLayout.AddLayout(leftLayout, 0)
-	topLayout.AddLayout(rightLayout, 0)
+	topLayout.AddLayout(leftLayout, 2)
+	topLayout.AddLayout(rightLayout, 1)
 	mainLayout := widgets.NewQVBoxLayout()
 	mainLayout.AddLayout(topLayout, 0)
 	mainLayout.AddStretch(0)

@@ -63,8 +63,15 @@ func (l *LoginWidget) InitUI() {
 	// 设置combobox代理
 	l.username.SetModel(userList.Model())
 	l.username.SetView(userList)
+
+	maxViewWidth := 0
 	for _, name := range names {
 		accountItem := NewAccountItem2(name)
+		// 设置下拉框宽度与宽度最大item一致
+		if accountItem.SizeHint().Width() > maxViewWidth {
+			maxViewWidth = accountItem.SizeHint().Width()
+			l.username.View().SetFixedWidth(maxViewWidth)
+		}
 		// ComboBox处理item被选中和点击删除按钮
 		accountItem.ConnectShowAccount(func(userName string) {
 			l.username.HidePopup()
