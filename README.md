@@ -51,7 +51,6 @@ data charts:
 ![charts](screenshots/charts.png)
 
 ### Todo:
-- add dialog to verify whether to delete a user
 - add dialog to confirm whether to save the configuration
 - support system tray
 - more clearly document

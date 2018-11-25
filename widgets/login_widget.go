@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -86,6 +87,15 @@ func (l *LoginWidget) InitUI() {
 
 		accountItem.ConnectRemoveAccount(func(userName string) {
 			l.username.HidePopup()
+
+			info := fmt.Sprintf("将删除用户：%s (同时删除使用数据)", userName)
+			buttons := widgets.QMessageBox__Yes | widgets.QMessageBox__Cancel
+			defaultButton := widgets.QMessageBox__Yes
+			answer := widgets.QMessageBox_Question4(l, "是否删除记录", info, buttons, defaultButton)
+			if answer != int(widgets.QMessageBox__Yes) {
+				return
+			}
+
 			// listWidget中的顺序和names一致
 			for i, v := range names {
 				if userName == v {
