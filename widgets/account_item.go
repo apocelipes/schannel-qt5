@@ -74,13 +74,19 @@ func (item *AccountItem) InitUI() {
 		if event.Button() == core.Qt__LeftButton {
 			// 记录左键按下
 			item.mousePress = true
+			return
 		}
+
+		item.QWidget.MousePressEventDefault(event)
 	})
-	item.ConnectMouseReleaseEvent(func(_ *gui.QMouseEvent) {
+	item.ConnectMouseReleaseEvent(func(event *gui.QMouseEvent) {
 		if item.mousePress {
 			item.ShowAccount(item.userName)
 			item.mousePress = false
+			return
 		}
+
+		item.QWidget.MouseReleaseEventDefault(event)
 	})
 
 	// 设置大小
