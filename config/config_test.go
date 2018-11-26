@@ -42,6 +42,7 @@ func TestConfigPath(t *testing.T) {
 func TestMarshalUserConf(t *testing.T) {
 	u := new(UserConfig)
 	u.SSRNodeConfigPath.Data = "/tmp/testing/t.json"
+	u.SSRClientConfigPath.Data = "/tmp/testing/client.json"
 	u.SSRBin.Data = "/tmp/testing/a.out"
 	u.LogFile.Data = "/tmp/a.log"
 

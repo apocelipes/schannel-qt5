@@ -239,7 +239,8 @@ func (w *ConfigWidget) saveConfig(_ bool) {
 // getConfig 根据设置信息生成新的config对象
 func (w *ConfigWidget) getConfig() *config.UserConfig {
 	conf := &config.UserConfig{}
-	conf.LogFile = config.JSONPath{Data: w.logFile.Text()}
+	conf.LogFile = config.JSONEmptyPath{}
+	conf.LogFile.Data = w.logFile.Text()
 	conf.SSRNodeConfigPath = config.JSONPath{Data: w.nodeConfigPath.Text()}
 	conf.SSRBin = config.JSONPath{Data: w.binPath.Text()}
 	conf.Proxy = config.JSONProxy{Data: w.GetProxyUrl()}

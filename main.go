@@ -44,16 +44,22 @@ func main() {
 		panic(err)
 	}
 
-	logPath, err := conf.LogFile.AbsPath()
-	if err != nil {
-		panic(err)
+	var logger *log.Logger
+	if !conf.LogFile.IsEmpty() {
+		logPath, err := conf.LogFile.AbsPath()
+		if err != nil {
+			panic(err)
+		}
+		logFile, err := os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
+		if err != nil {
+			panic(err)
+		}
+		defer logFile.Close()
+		logger = log.New(logFile, prefix, log.LstdFlags|log.Lshortfile)
+	} else {
+		// 未指定logfile时使用stdout替代
+		logger = log.New(os.Stdout, prefix, log.LstdFlags|log.Lshortfile)
 	}
-	logFile, err := os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0664)
-	if err != nil {
-		panic(err)
-	}
-	defer logFile.Close()
-	logger := log.New(logFile, prefix, log.LstdFlags|log.Lshortfile)
 
 	// 获取用户数据库连接
 	db := orm.NewOrm()

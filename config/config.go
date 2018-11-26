@@ -23,8 +23,8 @@ var (
 // UserConfig 用户配置
 type UserConfig struct {
 	// client config
-	Proxy   JSONProxy `json:"proxy_url"`
-	LogFile JSONPath  `json:"log_file"`
+	Proxy   JSONProxy     `json:"proxy_url"`
+	LogFile JSONEmptyPath `json:"log_file"`
 
 	// ssr config
 	SSRNodeConfigPath   JSONPath `json:"ssr_node_config_path"`
