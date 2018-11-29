@@ -13,6 +13,9 @@ import (
 type SSRConfigWidget struct {
 	widgets.QWidget
 
+	// 通知配置值发生变化
+	_ func() `signal:"valueChanged"`
+
 	// 本地监听地址
 	localAddr    *widgets.QLineEdit
 	localAddrMsg *ColorLabel
@@ -46,6 +49,9 @@ func (s *SSRConfigWidget) InitUI() {
 	s.localAddr = widgets.NewQLineEdit(nil)
 	s.localAddr.SetPlaceholderText("绑定本地ip地址")
 	s.localAddr.SetText(s.conf.LocalAddr())
+	s.localAddr.ConnectTextChanged(func(_ string) {
+		s.ValueChanged()
+	})
 	s.localAddrMsg = NewColorLabelWithColor("不是合法的ip地址", "red")
 	s.localAddrMsg.Hide()
 	groupLayout.AddRow3("本地地址：", s.localAddr)
@@ -56,6 +62,9 @@ func (s *SSRConfigWidget) InitUI() {
 	s.localPort.SetRange(1024, 65535)
 	port, _ := strconv.Atoi(s.conf.LocalPort())
 	s.localPort.SetValue(port)
+	s.localPort.ConnectValueChanged(func(_ int) {
+		s.ValueChanged()
+	})
 	s.localPortMsg = NewColorLabelWithColor("不是合法的端口值", "red")
 	s.localPortMsg.Hide()
 	groupLayout.AddRow3("本地端口：", s.localPort)
@@ -64,6 +73,9 @@ func (s *SSRConfigWidget) InitUI() {
 	s.pidFilePath = widgets.NewQLineEdit(nil)
 	s.pidFilePath.SetPlaceholderText("绝对路径")
 	s.pidFilePath.SetText(s.conf.PidFilePath())
+	s.pidFilePath.ConnectTextChanged(func(_ string) {
+		s.ValueChanged()
+	})
 	s.pidFilePathMsg = NewColorLabelWithColor("不是合法的路径", "red")
 	s.pidFilePathMsg.Hide()
 	groupLayout.AddRow3("pid-file路径：", s.pidFilePath)
@@ -82,6 +94,9 @@ func (s *SSRConfigWidget) InitUI() {
 	} else {
 		versionInfo.SetText(fmt.Sprintf("内核版本不支持fast-open: %v", version))
 	}
+	s.fastOpen.ConnectClicked(func(_ bool) {
+		s.ValueChanged()
+	})
 	groupLayout.AddRow5(s.fastOpen)
 	groupLayout.AddRow5(versionInfo)
 
@@ -94,26 +109,21 @@ func (s *SSRConfigWidget) InitUI() {
 // UpdateSSRClientConfig 更新config，如果数据不合法则返回error
 // 因为传递了引用类型，所以直接修改config对象
 func (s *SSRConfigWidget) UpdateSSRClientConfig() error {
-	// 记录返回值
-	var errRes error
-
 	// 可选时才设置fast-open值
 	if s.fastOpen.IsEnabled() {
 		s.conf.SetFastOpen(s.fastOpen.IsChecked())
 	}
 
-	err := s.conf.SetLocalPort(strconv.Itoa(s.localPort.Value()))
-	if showErrorMsg(s.localPortMsg, err) {
-		errRes = err
-	}
-	err = s.conf.SetLocalAddr(s.localAddr.Text())
-	if showErrorMsg(s.localAddrMsg, err) {
-		errRes = err
-	}
-	err = s.conf.SetPidFilePath(s.pidFilePath.Text())
-	if showErrorMsg(s.pidFilePathMsg, err) {
-		errRes = err
-	}
+	// 记录返回值
+	var err error
+	err = s.conf.SetLocalPort(strconv.Itoa(s.localPort.Value()))
+	showErrorMsg(s.localPortMsg, err)
 
-	return errRes
+	err = s.conf.SetLocalAddr(s.localAddr.Text())
+	showErrorMsg(s.localAddrMsg, err)
+
+	err = s.conf.SetPidFilePath(s.pidFilePath.Text())
+	showErrorMsg(s.pidFilePathMsg, err)
+
+	return err
 }

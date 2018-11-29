@@ -140,6 +140,15 @@ func checkPath(path string) error {
 	return nil
 }
 
+// checkEmptyPath 检查路径是否为绝对路径且不为目录，允许空路径
+func checkEmptyPath(path string) error {
+	if path == "" {
+		return nil
+	}
+
+	return checkPath(path)
+}
+
 // getGeoName 根据节点名字获取对应地区信息
 func getGeoName(name string) string {
 	areas := strings.Split(name, "_")
