@@ -74,6 +74,9 @@ func (cw *ClientConfigWidget) InitUI() {
 	ssrLayout := widgets.NewQFormLayout(nil)
 	cw.ssrConfigPath = widgets.NewQLineEdit2(cw.conf.SSRClientConfigPath.String(), nil)
 	cw.ssrConfigPath.SetPlaceholderText("绝对路径")
+	cw.ssrConfigPath.ConnectTextChanged(func(_ string) {
+		cw.ValueChanged()
+	})
 	cw.ssrConfigPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	cw.ssrConfigPathMsg.Hide()
 	ssrLayout.AddRow3("客户端配置路径：", cw.ssrConfigPath)
@@ -81,6 +84,9 @@ func (cw *ClientConfigWidget) InitUI() {
 
 	cw.nodeConfigPath = widgets.NewQLineEdit2(cw.conf.SSRNodeConfigPath.String(), nil)
 	cw.nodeConfigPath.SetPlaceholderText("绝对路径")
+	cw.nodeConfigPath.ConnectTextChanged(func(_ string) {
+		cw.ValueChanged()
+	})
 	cw.nodeConfigPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	cw.nodeConfigPathMsg.Hide()
 	ssrLayout.AddRow3("节点配置路径：", cw.nodeConfigPath)
@@ -88,6 +94,9 @@ func (cw *ClientConfigWidget) InitUI() {
 
 	cw.binPath = widgets.NewQLineEdit2(cw.conf.SSRBin.String(), nil)
 	cw.binPath.SetPlaceholderText("绝对路径")
+	cw.binPath.ConnectTextChanged(func(_ string) {
+		cw.ValueChanged()
+	})
 	cw.binPathMsg = NewColorLabelWithColor("路径需要为绝对路径且不能为目录", "red")
 	cw.binPathMsg.Hide()
 	ssrLayout.AddRow3("程序路径：", cw.binPath)
@@ -107,6 +116,9 @@ func (cw *ClientConfigWidget) InitUI() {
 	proxyLabel := widgets.NewQLabel2("代理服务器地址:", nil, 0)
 	cw.proxy = widgets.NewQLineEdit(nil)
 	cw.proxy.SetPlaceholderText("URL")
+	cw.proxy.ConnectTextChanged(func(_ string) {
+		cw.ValueChanged()
+	})
 	cw.proxyMsg = NewColorLabelWithColor("不是合法的URL", "red")
 	cw.proxyMsg.Hide()
 
@@ -153,23 +165,34 @@ func (w *ClientConfigWidget) splitProtoHost() (proto, host string) {
 // UpdateClientConfig 更新UserClient，传递的为UserConfig的引用，可以直接修改
 func (cw *ClientConfigWidget) UpdateClientConfig() error {
 	var err error
+	var errRes error
 
 	err = cw.validLogFile()
-	showErrorMsg(cw.logFileMsg, err)
+	if showErrorMsg(cw.logFileMsg, err) {
+		errRes = err
+	}
 
 	err = cw.validSSRConfigPath()
-	showErrorMsg(cw.ssrConfigPathMsg, err)
+	if showErrorMsg(cw.ssrConfigPathMsg, err) {
+		errRes = err
+	}
 
 	err = cw.validNodeConfigPath()
-	showErrorMsg(cw.nodeConfigPathMsg, err)
+	if showErrorMsg(cw.nodeConfigPathMsg, err) {
+		errRes = err
+	}
 
 	err = cw.validBinPath()
-	showErrorMsg(cw.binPathMsg, err)
+	if showErrorMsg(cw.binPathMsg, err) {
+		errRes = err
+	}
 
 	err = cw.validProxy()
-	showErrorMsg(cw.proxyMsg, err)
+	if showErrorMsg(cw.proxyMsg, err) {
+		errRes = err
+	}
 
-	return err
+	return errRes
 }
 
 // GetProxyURL 返回拼接了type后的URL

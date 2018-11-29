@@ -2,11 +2,11 @@ package widgets
 
 import (
 	"fmt"
-	"github.com/therecipe/qt/gui"
 	"log"
 	"net/http"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
@@ -64,8 +64,6 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 	m.dataBridge = NewDataBridge(cookies, m.conf.Proxy.String(), m.logger)
 	// 删除login，因为目前只有login一个widget所以index是0
 	m.tab.RemoveTab(0)
-	// 移动到左上角，避免窗口因较长显示不完整
-	m.Move2(0, 0)
 
 	m.setting = NewConfigWidget2(m.conf)
 	// 关闭时确认配置修改的保存
@@ -92,6 +90,8 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 			} else {
 				event.Ignore()
 			}
+		default:
+			event.Ignore()
 		}
 	})
 
@@ -114,4 +114,6 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 		m.logger.Printf("已添加综合信息面板：服务%d\n", i+1)
 	}
 	m.tab.AddTab(m.setting, "设置")
+	// 移动到左上角，避免窗口因较长显示不完整
+	m.Move2(0, 0)
 }

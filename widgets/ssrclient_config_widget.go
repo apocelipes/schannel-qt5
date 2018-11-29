@@ -116,14 +116,21 @@ func (s *SSRConfigWidget) UpdateSSRClientConfig() error {
 
 	// 记录返回值
 	var err error
+	var errRes error
 	err = s.conf.SetLocalPort(strconv.Itoa(s.localPort.Value()))
-	showErrorMsg(s.localPortMsg, err)
+	if showErrorMsg(s.localPortMsg, err) {
+		errRes = err
+	}
 
 	err = s.conf.SetLocalAddr(s.localAddr.Text())
-	showErrorMsg(s.localAddrMsg, err)
+	if showErrorMsg(s.localAddrMsg, err) {
+		errRes = err
+	}
 
 	err = s.conf.SetPidFilePath(s.pidFilePath.Text())
-	showErrorMsg(s.pidFilePathMsg, err)
+	if showErrorMsg(s.pidFilePathMsg, err) {
+		errRes = err
+	}
 
-	return err
+	return errRes
 }

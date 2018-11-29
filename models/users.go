@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -76,9 +75,9 @@ func SetUserPassword(db orm.Ormer, user string, password string) error {
 	if db.QueryTable(u).Filter("Name", u.Name).Exist() {
 		old := &User{Name: u.Name}
 		db.QueryTable(old).Filter("Name", old.Name).One(old)
-		// 和旧值一样，不更新，返回error
+		// 和旧值一样，不更新，返回nil
 		if u.Passwd == old.Passwd {
-			return errors.New("insert same values")
+			return nil
 		}
 		_, err := db.QueryTable(u).Filter("Name", u.Name).Update(orm.Params{
 			"Passwd": u.Passwd,
