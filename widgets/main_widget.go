@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"fmt"
+	"github.com/therecipe/qt/gui"
 	"log"
 	"net/http"
 
@@ -67,6 +68,33 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 	m.Move2(0, 0)
 
 	m.setting = NewConfigWidget2(m.conf)
+	// 关闭时确认配置修改的保存
+	m.ConnectCloseEvent(func(event *gui.QCloseEvent) {
+		if m.setting.Saved() {
+			event.Accept()
+			return
+		}
+
+		info := "配置信息尚未保存，是否保存？"
+		buttons := widgets.QMessageBox__Yes | widgets.QMessageBox__Cancel | widgets.QMessageBox__No
+		defaultButton := widgets.QMessageBox__Cancel
+		answer := widgets.QMessageBox_Question4(m, "配置未保存", info, buttons, defaultButton)
+		switch answer {
+		case int(widgets.QMessageBox__No):
+			event.Accept()
+		case int(widgets.QMessageBox__Cancel):
+			event.Ignore()
+		case int(widgets.QMessageBox__Yes):
+			m.setting.SaveConfig()
+			// 保存失败停止关闭
+			if m.setting.Saved() {
+				event.Accept()
+			} else {
+				event.Ignore()
+			}
+		}
+	})
+
 	// 可能存在多个服务
 	services := m.dataBridge.ServiceInfos()
 	for i, v := range services {

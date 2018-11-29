@@ -51,7 +51,9 @@ func (w *ConfigWidget) InitUI() {
 	})
 
 	saveButton := widgets.NewQPushButton2("保存", nil)
-	saveButton.ConnectClicked(w.saveConfig)
+	saveButton.ConnectClicked(func(_ bool) {
+		w.SaveConfig()
+	})
 
 	// 大小策略，client和ssrClient大小2:1
 	clientConfigSizePolicy := w.clientConfigWidget.SizePolicy()
@@ -72,7 +74,7 @@ func (w *ConfigWidget) InitUI() {
 }
 
 // saveConfig 验证并保存配置
-func (w *ConfigWidget) saveConfig(_ bool) {
+func (w *ConfigWidget) SaveConfig() {
 	// 保存时不可修改设置信息
 	w.SetEnabled(false)
 	defer w.SetEnabled(true)
