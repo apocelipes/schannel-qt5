@@ -26,6 +26,8 @@ type LoginWidget struct {
 	password    *widgets.QLineEdit
 	loginStatus *ColorLabel
 	remember    *widgets.QCheckBox
+	loginButton *widgets.QPushButton
+	indicator   *LoginIndicator
 
 	// 用户数据
 	conf   *config.UserConfig
@@ -139,26 +141,46 @@ func (l *LoginWidget) InitUI() {
 	l.loginStatus = NewColorLabelWithColor("", "red")
 	l.loginStatus.Hide()
 
-	loginButton := widgets.NewQPushButton2("登录", nil)
-	loginButton.ConnectClicked(l.checkLogin)
+	// login时显示busy进度条
+	l.indicator = NewLoginIndicator2()
+	l.indicator.Hide()
+
+	l.loginButton = widgets.NewQPushButton2("登录", nil)
+	l.loginButton.ConnectClicked(l.login)
 
 	loginLayout := widgets.NewQHBoxLayout()
 	loginLayout.AddWidget(l.remember, 0, 0)
 	loginLayout.AddStretch(0)
-	loginLayout.AddWidget(loginButton, 0, 0)
+	loginLayout.AddWidget(l.loginButton, 0, 0)
 
 	mainLayout := widgets.NewQFormLayout(nil)
 	mainLayout.AddRow5(l.loginStatus)
 	mainLayout.AddRow3("用户名：", l.username)
 	mainLayout.AddRow3("密码：", l.password)
 	mainLayout.AddRow6(loginLayout)
+	mainLayout.AddRow5(l.indicator)
 	l.SetLayout(mainLayout)
 }
 
-func (l *LoginWidget) checkLogin(_ bool) {
-	// 防止多次点击登录按钮或在登录时改变lineedit内容
-	l.SetEnabled(false)
-	defer l.SetEnabled(true)
+func (l *LoginWidget) login(_ bool) {
+	l.indicator.Show()
+
+	go l.checkLogin()
+}
+
+// checkLogin 请求登录，用户名密码正确则登陆成功
+// 勾选了remember时将会更新记录进数据库
+// 登录失败显示失败信息
+func (l *LoginWidget) checkLogin() {
+	// 禁止用户在登录过程中影响输入信息
+	l.username.SetEnabled(false)
+	l.password.SetEnabled(false)
+	l.remember.SetEnabled(false)
+	l.loginButton.SetEnabled(false)
+	defer l.username.SetEnabled(true)
+	defer l.password.SetEnabled(true)
+	defer l.remember.SetEnabled(true)
+	defer l.loginButton.SetEnabled(true)
 
 	passwd := l.password.Text()
 	user := l.username.CurrentText()
@@ -198,6 +220,7 @@ func (l *LoginWidget) checkLogin(_ bool) {
 
 // 更新并显示错误信息
 func (l *LoginWidget) loginFailed(errInfo string) {
+	l.indicator.Hide()
 	l.loginStatus.SetDefaultColorText(errInfo)
 	if l.loginStatus.IsHidden() {
 		l.loginStatus.Show()
