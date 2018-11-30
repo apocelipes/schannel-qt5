@@ -83,7 +83,8 @@ func (s *SSRConfigWidget) InitUI() {
 
 	// 检查内核版本
 	versionInfo := widgets.NewQLabel(nil, 0)
-	s.fastOpen = widgets.NewQCheckBox2("启用fast-open (Linux kernel 3.7+)", nil)
+	s.fastOpen = widgets.NewQCheckBox2("启用fast-open", nil)
+	s.fastOpen.SetToolTip("此功能需要Linux kernel版本 >= 3.7.0")
 	s.fastOpen.SetEnabled(false)
 	if version, err := kernelVersion(); err != nil {
 		versionInfo.SetText(err.Error())

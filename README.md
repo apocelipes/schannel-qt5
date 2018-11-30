@@ -31,6 +31,7 @@ login:
 ![login](screenshots/login.png)
 
 logging:
+
 ![logging](screenshots/logging.png)
 
 invoices view:

@@ -22,12 +22,13 @@ type LoginWidget struct {
 	_ func(string)                 `signal:"loginFailed,auto"`
 	_ func(string, []*http.Cookie) `signal:"loginSuccess"`
 
-	username    *widgets.QComboBox
-	password    *widgets.QLineEdit
-	loginStatus *ColorLabel
-	remember    *widgets.QCheckBox
-	loginButton *widgets.QPushButton
-	indicator   *LoginIndicator
+	username     *widgets.QComboBox
+	password     *widgets.QLineEdit
+	loginStatus  *ColorLabel
+	showPassword *widgets.QCheckBox
+	remember     *widgets.QCheckBox
+	loginButton  *widgets.QPushButton
+	indicator    *LoginIndicator
 
 	// 用户数据
 	conf   *config.UserConfig
@@ -120,6 +121,18 @@ func (l *LoginWidget) InitUI() {
 	l.password.SetPlaceholderText("密码")
 	l.password.SetEchoMode(widgets.QLineEdit__Password)
 
+	// 勾选是否明文显示密码
+	l.showPassword = widgets.NewQCheckBox2("显示密码", nil)
+	l.showPassword.SetChecked(false)
+	l.showPassword.ConnectClicked(func(_ bool) {
+		if l.showPassword.IsChecked() {
+			l.password.SetEchoMode(widgets.QLineEdit__Normal)
+			return
+		}
+
+		l.password.SetEchoMode(widgets.QLineEdit__Password)
+	})
+
 	l.remember = widgets.NewQCheckBox2("记住用户名和密码", nil)
 	// 设置第一个记录用户的密码
 	// 因为comboBox默认选择显示第一个name，不会触发信号
@@ -157,6 +170,7 @@ func (l *LoginWidget) InitUI() {
 	mainLayout.AddRow5(l.loginStatus)
 	mainLayout.AddRow3("用户名：", l.username)
 	mainLayout.AddRow3("密码：", l.password)
+	mainLayout.AddRow5(l.showPassword)
 	mainLayout.AddRow6(loginLayout)
 	mainLayout.AddRow5(l.indicator)
 	l.SetLayout(mainLayout)
@@ -175,10 +189,12 @@ func (l *LoginWidget) checkLogin() {
 	// 禁止用户在登录过程中影响输入信息
 	l.username.SetEnabled(false)
 	l.password.SetEnabled(false)
+	l.showPassword.SetEnabled(false)
 	l.remember.SetEnabled(false)
 	l.loginButton.SetEnabled(false)
 	defer l.username.SetEnabled(true)
 	defer l.password.SetEnabled(true)
+	defer l.showPassword.SetEnabled(true)
 	defer l.remember.SetEnabled(true)
 	defer l.loginButton.SetEnabled(true)
 
