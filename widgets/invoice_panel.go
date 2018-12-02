@@ -19,14 +19,14 @@ type InvoicePanel struct {
 	invoices []*parser.Invoice
 }
 
-// sortInvoices 将账单按开始日期排序
+// sortInvoices 将账单按开始日期倒序排序
 func (panel *InvoicePanel) sortInvoices() {
 	sort.Slice(panel.invoices, func(i, j int) bool {
 		if panel.invoices[i].StartDate.Before(panel.invoices[j].StartDate) {
-			return true
+			return false
 		}
 
-		return false
+		return true
 	})
 }
 
@@ -63,7 +63,7 @@ func (panel *InvoicePanel) showInvoiceDialog(_ bool) {
 
 // setInvoiceStatus 设置invoice的显示信息和颜色
 func (panel *InvoicePanel) setInvoiceStatus() {
-	text, isPaid := panel.invoices[len(panel.invoices)-1].GetStatus()
+	text, isPaid := panel.invoices[0].GetStatus()
 	if isPaid {
 		panel.status = NewColorLabelWithColor(text, "green")
 	} else {
