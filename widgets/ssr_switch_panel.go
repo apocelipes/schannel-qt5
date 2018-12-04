@@ -125,16 +125,14 @@ func (s *SSRSwitchPanel) InitUI() {
 		switch s.switchButton.Text() {
 		case "打开":
 			if err := s.ssrClient.Start(); err != nil {
-				errMsg := widgets.NewQErrorMessage(nil)
-				errMsg.ShowMessage(fmt.Sprintf("启动客户端错误: %v", err))
-				errMsg.Exec()
+				errInfo := fmt.Sprintf("启动客户端错误: %v", err)
+				showErrorDialog(errInfo)
 				return
 			}
 		case "关闭":
 			if err := s.ssrClient.Stop(); err != nil {
-				errMsg := widgets.NewQErrorMessage(nil)
-				errMsg.ShowMessage(fmt.Sprintf("关闭客户端错误: %v", err))
-				errMsg.Exec()
+				errInfo := fmt.Sprintf("关闭客户端错误: %v", err)
+				showErrorDialog(errInfo)
 				return
 			}
 		}
@@ -200,10 +198,8 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 	s.ssrClient = ssr.NewLauncher("python", s.conf)
 	if s.ssrClient == nil {
 		s.logger.Println("ssr switch DataRefresh: 初始化ssr客户端错误")
-		errMsg := widgets.NewQErrorMessage(nil)
 		// TODO 更详细的错误信息
-		errMsg.ShowMessage("初始化ssr客户端错误")
-		errMsg.Show()
+		showErrorDialog("初始化ssr客户端错误")
 		return
 	}
 

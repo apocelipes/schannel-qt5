@@ -83,6 +83,7 @@ func (w *ConfigWidget) SaveConfig() {
 	// 更新ssr client config
 	err = w.ssrClientConfigWidget.UpdateSSRClientConfig()
 	if err != nil {
+		// 错误信息已经显示，无需使用showErrorDialog
 		return
 	}
 	// 更新client config
@@ -92,9 +93,7 @@ func (w *ConfigWidget) SaveConfig() {
 	}
 
 	if err := w.conf.StoreConfig(); err != nil {
-		errorMsg := widgets.NewQErrorMessage(nil)
-		errorMsg.ShowMessage("保存出错: " + err.Error())
-		errorMsg.Exec()
+		showErrorDialog("保存出错: " + err.Error())
 		return
 	}
 
