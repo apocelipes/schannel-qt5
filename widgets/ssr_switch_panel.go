@@ -126,13 +126,13 @@ func (s *SSRSwitchPanel) InitUI() {
 		case "打开":
 			if err := s.ssrClient.Start(); err != nil {
 				errInfo := fmt.Sprintf("启动客户端错误: %v", err)
-				showErrorDialog(errInfo)
+				showErrorDialog(errInfo, s)
 				return
 			}
 		case "关闭":
 			if err := s.ssrClient.Stop(); err != nil {
 				errInfo := fmt.Sprintf("关闭客户端错误: %v", err)
-				showErrorDialog(errInfo)
+				showErrorDialog(errInfo, s)
 				return
 			}
 		}
@@ -199,7 +199,7 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 	if s.ssrClient == nil {
 		s.logger.Println("ssr switch DataRefresh: 初始化ssr客户端错误")
 		// TODO 更详细的错误信息
-		showErrorDialog("初始化ssr客户端错误")
+		showErrorDialog("初始化ssr客户端错误", s)
 		return
 	}
 

@@ -20,8 +20,8 @@ func showErrorMsg(label *ColorLabel, err error) bool {
 }
 
 // showErrorDialog 显示错误信息
-func showErrorDialog(info string) {
-	errMsg := widgets.NewQErrorMessage(nil)
+func showErrorDialog(info string, parent widgets.QWidget_ITF) {
+	errMsg := widgets.NewQErrorMessage(parent)
 	errMsg.ShowMessage(info)
 	errMsg.SetAttribute(core.Qt__WA_DeleteOnClose, true)
 	errMsg.Exec()

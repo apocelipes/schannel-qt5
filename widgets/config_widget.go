@@ -93,7 +93,7 @@ func (w *ConfigWidget) SaveConfig() {
 	}
 
 	if err := w.conf.StoreConfig(); err != nil {
-		showErrorDialog("保存出错: " + err.Error())
+		showErrorDialog("保存出错: " + err.Error(), w)
 		return
 	}
 
