@@ -88,6 +88,8 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 			if m.setting.Saved() {
 				event.Accept()
 			} else {
+				// 保存不成功，转至settings
+				m.tab.SetCurrentWidget(m.setting)
 				event.Ignore()
 			}
 		default:
