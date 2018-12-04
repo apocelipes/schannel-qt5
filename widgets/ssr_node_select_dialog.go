@@ -1,6 +1,11 @@
 package widgets
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/parser"
@@ -77,16 +82,19 @@ func (dialog *NodeSelectDialog) InitUI() {
 	dialog.cancelButton.ConnectClicked(func(_ bool) {
 		dialog.Reject()
 	})
+	saveNodeButton := widgets.NewQPushButton2("保存至文件", nil)
+	saveNodeButton.ConnectClicked(dialog.saveNode)
 
 	mainLayout := widgets.NewQGridLayout2()
 	mainLayout.AddLayout(listLayout, 0, 0, 0)
-	mainLayout.AddWidget3(dialog.detail, 0, 1, 1, 2, 0)
+	mainLayout.AddWidget3(dialog.detail, 0, 1, 1, 3, 0)
 	// 水平分割线
 	hFrame := widgets.NewQFrame(nil, 0)
-	hFrame.SetFrameStyle(int(widgets.QFrame__HLine)|int(widgets.QFrame__Sunken))
-	mainLayout.AddWidget3(hFrame, 1, 0, 1, 3, 0)
-	mainLayout.AddWidget(dialog.cancelButton, 2, 1, 0)
-	mainLayout.AddWidget(dialog.okButton, 2, 2, 0)
+	hFrame.SetFrameStyle(int(widgets.QFrame__HLine) | int(widgets.QFrame__Sunken))
+	mainLayout.AddWidget3(hFrame, 1, 0, 1, 4, 0)
+	mainLayout.AddWidget(saveNodeButton, 2, 1, 0)
+	mainLayout.AddWidget(dialog.cancelButton, 2, 2, 0)
+	mainLayout.AddWidget(dialog.okButton, 2, 3, 0)
 	dialog.SetLayout(mainLayout)
 	dialog.SetWindowTitle("选择节点")
 }
@@ -99,4 +107,50 @@ func (dialog *NodeSelectDialog) getNodeNames() []string {
 	}
 
 	return names
+}
+
+// saveNode 保存节点信息至文件
+func (dialog *NodeSelectDialog) saveNode(_ bool) {
+	home := os.Getenv("HOME")
+	if home == "" {
+		showErrorDialog("未找到$HOME，无法保存", dialog)
+		return
+	}
+	jsonFileFilter := "JSON Files(*.json)"
+	nodeFileName := fmt.Sprintf("%s.json", dialog.CurrentNode.NodeName)
+	defaultSavePath := filepath.Join(home, nodeFileName)
+
+	savePath := widgets.QFileDialog_GetSaveFileName(dialog,
+		"保存",
+		defaultSavePath,
+		jsonFileFilter,
+		"",
+		0)
+	if savePath == "" {
+		return
+	}
+
+	data, err := json.MarshalIndent(dialog.CurrentNode, "", "\t")
+	if err != nil {
+		showErrorDialog("配置解析失败：" + err.Error(), dialog)
+		return
+	}
+	f, err := os.OpenFile(savePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		showErrorDialog("文件创建失败：" + err.Error(), dialog)
+		return
+	}
+	defer f.Close()
+	_, err = f.Write(data)
+	if err != nil {
+		showErrorDialog("写入配置失败：" + err.Error(), dialog)
+		return
+	}
+
+	infoButton := widgets.QMessageBox__Yes
+	widgets.QMessageBox_Information4(dialog,
+		"保存成功",
+		savePath+"保存成功",
+		infoButton,
+		infoButton)
 }
