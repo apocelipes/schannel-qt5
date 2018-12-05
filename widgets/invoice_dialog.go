@@ -76,6 +76,9 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 	dialog.table.SetFrameShape(widgets.QFrame__NoFrame)
 	// 去除行号
 	dialog.table.VerticalHeader().SetVisible(false)
+	// 设置选择整行内容
+	dialog.table.SetSelectionBehavior(widgets.QAbstractItemView__SelectRows)
+	dialog.table.SetSelectionMode(widgets.QAbstractItemView__SingleSelection)
 	// 设置table的数据项目
 	dialog.setTable()
 	dialog.table.ConnectItemClicked(dialog.setLink)
