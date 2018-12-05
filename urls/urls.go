@@ -2,7 +2,7 @@ package urls
 
 const (
 	// RootPath 网站主URL
-	RootPath        = `https://sgchannel.info/`
+	RootPath        = `https://sgchannel.me/`
 	// AuthPath 登录页面的URL
 	AuthPath        = RootPath + `clientarea.php`
 	// ServiceListPath 服务列表URL
