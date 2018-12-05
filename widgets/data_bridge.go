@@ -10,9 +10,9 @@ import (
 	"schannel-qt5/parser"
 )
 
-// 日志子前缀
 const (
-	prefix = "data_bridge: "
+	// 日志子前缀
+	dataBridgePrefix = "data_bridge: "
 )
 
 // UserDataBridge 传递用户数据到界面组件
@@ -26,6 +26,8 @@ type UserDataBridge interface {
 	Invoices() []*parser.Invoice
 	// GetLogger 获取logger
 	GetLogger() *log.Logger
+	// GetCookies 获取用户的cookie
+	GetCookies() []*http.Cookie
 }
 
 // accountDataProxy 用于获取和缓存用户数据的代理类
@@ -64,7 +66,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 
 	servicesHTML, err := crawler.GetServiceHTML(a.cookies, a.proxy)
 	if err != nil {
-		a.logger.Printf(prefix+"%v\n", err)
+		a.logger.Printf(dataBridgePrefix+"%v\n", err)
 		return
 	}
 
@@ -73,7 +75,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 	for _, ser := range servicesList {
 		infoHTML, err := crawler.GetSSRInfoHTML(ser, a.cookies, a.proxy)
 		if err != nil {
-			a.logger.Printf(prefix+"%v\n", err)
+			a.logger.Printf(dataBridgePrefix+"%v\n", err)
 			return
 		}
 
@@ -84,7 +86,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 
 	invoiceHTML, err := crawler.GetInvoiceHTML(a.cookies, a.proxy)
 	if err != nil {
-		a.logger.Printf(prefix+"%v\n", err)
+		a.logger.Printf(dataBridgePrefix+"%v\n", err)
 		return
 	}
 	a.invoices = parser.GetInvoices(invoiceHTML)
@@ -130,13 +132,26 @@ func (a *accountDataProxy) Invoices() []*parser.Invoice {
 	defer a.Unlock()
 	a.checkCacheExpired()
 
-	tmp := make([]*parser.Invoice, len(a.invoices))
-	copy(tmp, a.invoices)
+	invoices := make([]*parser.Invoice, len(a.invoices))
+	copy(invoices, a.invoices)
 
-	return tmp
+	return invoices
 }
 
 // GetLogger 获取共享logger
 func (a *accountDataProxy) GetLogger() *log.Logger {
+	a.Lock()
+	defer a.Unlock()
+
 	return a.logger
+}
+
+// GetCookies 获取登录后的用户身份cookies
+func (a *accountDataProxy) GetCookies() []*http.Cookie {
+	a.Lock()
+	defer a.Unlock()
+	cookies := make([]*http.Cookie, len(a.cookies))
+	copy(cookies, a.cookies)
+
+	return cookies
 }
