@@ -178,26 +178,24 @@ func (l *LoginWidget) InitUI() {
 
 func (l *LoginWidget) login(_ bool) {
 	l.indicator.Show()
+	l.setEditAreaEnabled(false)
 
 	go l.checkLogin()
+}
+
+// 控制输入区是否可编辑，禁止用户在登录过程中影响输入信息
+func (l *LoginWidget) setEditAreaEnabled(enabled bool) {
+	l.username.SetEnabled(enabled)
+	l.password.SetEnabled(enabled)
+	l.showPassword.SetEnabled(enabled)
+	l.remember.SetEnabled(enabled)
+	l.loginButton.SetEnabled(enabled)
 }
 
 // checkLogin 请求登录，用户名密码正确则登陆成功
 // 勾选了remember时将会更新记录进数据库
 // 登录失败显示失败信息
 func (l *LoginWidget) checkLogin() {
-	// 禁止用户在登录过程中影响输入信息
-	l.username.SetEnabled(false)
-	l.password.SetEnabled(false)
-	l.showPassword.SetEnabled(false)
-	l.remember.SetEnabled(false)
-	l.loginButton.SetEnabled(false)
-	defer l.username.SetEnabled(true)
-	defer l.password.SetEnabled(true)
-	defer l.showPassword.SetEnabled(true)
-	defer l.remember.SetEnabled(true)
-	defer l.loginButton.SetEnabled(true)
-
 	passwd := l.password.Text()
 	user := l.username.CurrentText()
 	if user == "" || passwd == "" {
@@ -237,6 +235,8 @@ func (l *LoginWidget) checkLogin() {
 // 更新并显示错误信息
 func (l *LoginWidget) loginFailed(errInfo string) {
 	l.indicator.Hide()
+	l.setEditAreaEnabled(true)
+
 	l.loginStatus.SetDefaultColorText(errInfo)
 	if l.loginStatus.IsHidden() {
 		l.loginStatus.Show()
