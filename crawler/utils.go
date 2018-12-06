@@ -8,8 +8,6 @@ import (
 	"net/url"
 
 	"golang.org/x/net/publicsuffix"
-
-	"schannel-qt5/urls"
 )
 
 const (
@@ -57,8 +55,8 @@ func setRequestHeader(request *http.Request, cookies []*http.Cookie, referer str
 	}
 }
 
-// getAccountPage 获取url指定的各种账户管理页面信息, cookies用于身份认证
-func getAccountPage(url string, cookies []*http.Cookie, proxy string) (string, error) {
+// getPage 获取url指定的各种账户管理页面信息, cookies用于身份认证
+func getPage(url, referer string, cookies []*http.Cookie, proxy string) (string, error) {
 	client, err := genClientWithProxy(proxy)
 	if err != nil {
 		return "", err
@@ -68,7 +66,7 @@ func getAccountPage(url string, cookies []*http.Cookie, proxy string) (string, e
 	if err != nil {
 		return "", err
 	}
-	setRequestHeader(request, cookies, urls.AuthPath)
+	setRequestHeader(request, cookies, referer)
 
 	resp, err := client.Do(request)
 	if err != nil {

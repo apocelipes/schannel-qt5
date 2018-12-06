@@ -20,7 +20,7 @@ func GetCsrfToken(proxy string) (string, []*http.Cookie, error) {
 		return "", nil, err
 	}
 
-	request, err := http.NewRequest("GET", urls.AuthPath, nil)
+	request, err := http.NewRequest("GET", urls.AccountPath, nil)
 	if err != nil {
 		return "", nil, err
 	}
@@ -69,15 +69,15 @@ func GetAuth(user, passwd, proxy string) ([]*http.Cookie, error) {
 	form.Set("token", csrfToken)
 	form.Set("username", user)
 	form.Set("password", passwd)
-	getlogin, err := http.NewRequest("POST", urls.LoginPath, strings.NewReader(form.Encode()))
+	getLogin, err := http.NewRequest("POST", urls.LoginPath, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
 	}
 
-	setRequestHeader(getlogin, session, urls.AuthPath)
-	getlogin.Header.Set("content-type", "application/x-www-form-urlencoded")
+	setRequestHeader(getLogin, session, urls.AccountPath)
+	getLogin.Header.Set("content-type", "application/x-www-form-urlencoded")
 
-	resp, err := client.Do(getlogin)
+	resp, err := client.Do(getLogin)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func GetAuth(user, passwd, proxy string) ([]*http.Cookie, error) {
 	u2, _ := url.Parse(urls.RootPath)
 	cookies := make([]*http.Cookie, 0, 2)
 	cookies = append(cookies, client.Jar.Cookies(u2)...)
-	// 添加cfuid会话cookie
+	// 添加cfduid会话cookie
 	for _, c := range session {
 		if c.Name == "__cfduid" {
 			cookies = append(cookies, c)
@@ -104,17 +104,22 @@ func GetAuth(user, passwd, proxy string) ([]*http.Cookie, error) {
 
 // GetServiceHTML 获取所有已购买服务的状态信息，包括详细页面的地址
 func GetServiceHTML(cookies []*http.Cookie, proxy string) (string, error) {
-	return getAccountPage(urls.ServiceListPath, cookies, proxy)
+	return getPage(urls.ServiceListPath, urls.AccountPath, cookies, proxy)
 }
 
 // GetInvoiceHTML 获取账单页面的HTML,包含未付款和已付款账单
 // 未付款账单显示在最前列
 // 现只支持获取第一页
 func GetInvoiceHTML(cookies []*http.Cookie, proxy string) (string, error) {
-	return getAccountPage(urls.InvoicePath, cookies, proxy)
+	return getPage(urls.InvoicePath, urls.AccountPath, cookies, proxy)
 }
 
 // GetSSRInfoHTML 获取服务详细信息页面的HTML，包含使用情况和节点信息
 func GetSSRInfoHTML(service *parser.Service, cookies []*http.Cookie, proxy string) (string, error) {
-	return getAccountPage(service.Link, cookies, proxy)
+	return getPage(service.Link, urls.ServiceListPath, cookies, proxy)
+}
+
+// GetInvoiceInfoHTML 获取账单详情页面内容
+func GetInvoiceInfoHTML(invoice *parser.Invoice, cookies []*http.Cookie, proxy string) (string, error) {
+	return getPage(invoice.Link, urls.InvoicePath, cookies, proxy)
 }

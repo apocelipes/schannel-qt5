@@ -125,3 +125,15 @@ func GetInvoices(data string) []*Invoice {
 
 	return invoiceList
 }
+
+// GetInvoiceDownloadURL 获取invoice下载地址
+func GetInvoiceDownloadURL(data string) string {
+	dom, _ := goquery.NewDocumentFromReader(strings.NewReader(data))
+	downloadBtn := dom.Find("i.fa-download").Parent()
+	downloadURL, exists := downloadBtn.Attr("href")
+	if !exists {
+		return ""
+	}
+
+	return urls.RootPath + downloadURL
+}
