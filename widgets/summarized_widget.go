@@ -67,7 +67,7 @@ func (sw *SummarizedWidget) InitUI() {
 	ssrInfo := sw.dataBridge.SSRInfos(sw.service)
 	logger := sw.dataBridge.GetLogger()
 	sw.servicePanel = NewServicePanel2(sw.user, ssrInfo)
-	sw.invoicePanel = NewInvoicePanelWithData(sw.dataBridge.Invoices())
+	sw.invoicePanel = NewInvoicePanelWithData(sw.dataBridge)
 	sw.switchPanel = NewSSRSwitchPanel2(sw.conf, ssrInfo.Nodes, logger)
 	sw.usedPanel = NewUsedPanelWithInfo(sw.user, ssrInfo, logger)
 

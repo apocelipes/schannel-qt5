@@ -2,18 +2,25 @@ package widgets
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
 
+	"schannel-qt5/crawler"
 	"schannel-qt5/parser"
 )
 
 // InvoiceDialog 显示全部的账单信息
 type InvoiceDialog struct {
 	widgets.QDialog
+
+	// goroutine中触发显示ErrorDialog及显示下载成功
+	_ func(errInfo string) `signal:"errorHappened,auto"`
+	_ func(file string)    `signal:"downloadFinish,auto"`
 
 	table   *widgets.QTableWidget
 	infoBar *widgets.QStatusBar
@@ -24,7 +31,8 @@ type InvoiceDialog struct {
 	// 选中的链接
 	link *widgets.QLabel
 
-	invoices []*parser.Invoice
+	invoices   []*parser.Invoice
+	dataBridge UserDataBridge
 }
 
 var (
@@ -40,9 +48,11 @@ var (
 )
 
 // NewInvoiceDialogWithData 生成dialog
-func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
+// bridge用户获取登录信息
+func NewInvoiceDialogWithData(bridge UserDataBridge, data []*parser.Invoice) *InvoiceDialog {
 	dialog := NewInvoiceDialog(nil, 0)
 	dialog.invoices = data
+	dialog.dataBridge = bridge
 
 	// 设置infobar，选中内容时显示账单链接
 	dialog.infoBar = widgets.NewQStatusBar(nil)
@@ -89,6 +99,8 @@ func NewInvoiceDialogWithData(data []*parser.Invoice) *InvoiceDialog {
 		dialog.link.SetText(invoice.Link)
 		dialog.copyLink(invoice.Link)
 	})
+
+	dialog.table.ConnectContextMenuEvent(dialog.invoiceContextMenu)
 
 	// 设置不可编辑table
 	dialog.table.SetEditTriggers(widgets.QAbstractItemView__NoEditTriggers)
@@ -165,4 +177,110 @@ func (dialog *InvoiceDialog) copyLink(link string) {
 		clip := gui.QGuiApplication_Clipboard()
 		clip.SetText(link, gui.QClipboard__Clipboard)
 	}
+}
+
+// invoiceContextMenu 显示table中invoice的右键菜单选项
+func (dialog *InvoiceDialog) invoiceContextMenu(_ *gui.QContextMenuEvent) {
+	menu := widgets.NewQMenu(dialog)
+	menu.AddAction("下载")
+	menu.ConnectTriggered(func(action *widgets.QAction) {
+		if action.Text() == "下载" {
+			dialog.download()
+		}
+	})
+
+	menu.Exec2(gui.QCursor_Pos(), nil)
+	menu.DestroyQMenu()
+}
+
+// errorHappened 收到goroutine返回的err并显示
+func (dialog *InvoiceDialog) errorHappened(errInfo string) {
+	showErrorDialog(errInfo, dialog)
+}
+
+// 下载完成，显示成功信息
+func (dialog *InvoiceDialog) downloadFinish(file string) {
+	info := fmt.Sprintf("%s下载成功", file)
+	infoButton := widgets.QMessageBox__Yes
+	widgets.QMessageBox_Information4(dialog,
+		"保存成功",
+		info,
+		infoButton,
+		infoButton)
+}
+
+// download 下载选定的账单
+// 更新statusbar，启动另一个goroutine进行下载并反馈进度
+func (dialog *InvoiceDialog) download() {
+	invoice := dialog.invoices[dialog.table.CurrentRow()]
+	dialog.link.SetText(invoice.Link)
+	dialog.copyLink(invoice.Link)
+
+	home := os.Getenv("HOME")
+	if home == "" {
+		showErrorDialog("未找到$HOME，无法保存", dialog)
+		return
+	}
+	defaultName := fmt.Sprintf("账单-%s.pdf", invoice.Number)
+	defaultPath := filepath.Join(home, defaultName)
+	file := widgets.QFileDialog_GetSaveFileName(dialog,
+		"保存账单",
+		defaultPath,
+		"PDF Files(*.pdf)",
+		"",
+		0)
+	if file == "" {
+		return
+	}
+
+	cookies := dialog.dataBridge.GetCookies()
+	proxy := dialog.dataBridge.GetProxy()
+	html, err := crawler.GetInvoiceInfoHTML(invoice, cookies, proxy)
+	if err != nil {
+		logger := dialog.dataBridge.GetLogger()
+		logger.Printf("GetInvoiceInfoHTML error: %v\n", err)
+		dialog.ErrorHappened("获取下载地址失败：" + err.Error())
+		return
+	}
+	downloadURL := parser.GetInvoiceDownloadURL(html)
+	downloader, err := NewHTTPDownloader2(downloadURL, invoice.Link, proxy, cookies)
+	if err != nil {
+		logger := dialog.dataBridge.GetLogger()
+		logger.Printf("NewHTTPDownloader2 error: %v\n", err)
+		showErrorDialog("获取下载器失败："+err.Error(), dialog)
+		return
+	}
+
+	progressDialog := widgets.NewQProgressDialog(dialog, 0)
+	progressDialog.SetAttribute(core.Qt__WA_DeleteOnClose, true)
+	progressDialog.SetCancelButtonText("取消")
+	progressDialog.SetLabelText("账单文件下载进度：")
+	progressDialog.SetRange(0, 0)
+	progressDialog.SetAutoReset(false)
+	progressDialog.SetWindowTitle("保存账单")
+
+	progressDialog.ConnectCanceled(func() {
+		downloader.Stop()
+		progressDialog.Cancel()
+		dialog.ErrorHappened("下载已取消")
+	})
+	downloader.ConnectUpdateProgress(func(size int) {
+		// 已经cancel的dialog不能调用setValue，避免dialog反复出现
+		if progressDialog.WasCanceled() {
+			return
+		}
+
+		progressDialog.SetValue(size)
+	})
+	downloader.ConnectUpdateMax(progressDialog.SetMaximum)
+	downloader.ConnectFailed(func(err error) {
+		dialog.ErrorHappened("下载发生错误：" + err.Error())
+	})
+	downloader.ConnectDone(func() {
+		progressDialog.Cancel()
+		dialog.DownloadFinish(file)
+	})
+
+	go downloader.Download(file)
+	progressDialog.Exec()
 }

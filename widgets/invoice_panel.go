@@ -15,6 +15,7 @@ type InvoicePanel struct {
 	status       *ColorLabel
 	showInvoices *widgets.QPushButton
 
+	dataBridge UserDataBridge
 	// 缓存的账单信息
 	invoices []*parser.Invoice
 }
@@ -31,10 +32,12 @@ func (panel *InvoicePanel) sortInvoices() {
 }
 
 // NewInvoicePanelWithData 生成InvoicePanel
-func NewInvoicePanelWithData(data []*parser.Invoice) *InvoicePanel {
+func NewInvoicePanelWithData(bridge UserDataBridge) *InvoicePanel {
 	panel := NewInvoicePanel(nil, 0)
-	panel.invoices = make([]*parser.Invoice, len(data))
-	copy(panel.invoices, data)
+	panel.dataBridge = bridge
+	invoices := panel.dataBridge.Invoices()
+	panel.invoices = make([]*parser.Invoice, len(invoices))
+	copy(panel.invoices, invoices)
 	panel.sortInvoices()
 
 	group := widgets.NewQGroupBox2("账单情况", nil)
@@ -57,7 +60,7 @@ func NewInvoicePanelWithData(data []*parser.Invoice) *InvoicePanel {
 
 // showInvoiceDialog 显示详细信息对话框
 func (panel *InvoicePanel) showInvoiceDialog(_ bool) {
-	dialog := NewInvoiceDialogWithData(panel.invoices)
+	dialog := NewInvoiceDialogWithData(panel.dataBridge, panel.invoices)
 	dialog.Exec()
 }
 
