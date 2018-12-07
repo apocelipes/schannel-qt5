@@ -13,9 +13,9 @@ import (
 	"schannel-qt5/urls"
 )
 
-// GetCsrfToken 返回本次回话所使用的csrftoken
-func GetCsrfToken(proxy string) (string, []*http.Cookie, error) {
-	client, err := genClientWithProxy(proxy)
+// GetCSRFToken 返回本次回话所使用的CSRFToken
+func GetCSRFToken(proxy string) (string, []*http.Cookie, error) {
+	client, err := GenClientWithProxy(proxy)
 	if err != nil {
 		return "", nil, err
 	}
@@ -24,7 +24,7 @@ func GetCsrfToken(proxy string) (string, []*http.Cookie, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	setRequestHeader(request, nil, urls.RootPath)
+	SetRequestHeader(request, nil, urls.RootPath, "gzip")
 
 	resp, err := client.Do(request)
 	if err != nil {
@@ -43,30 +43,30 @@ func GetCsrfToken(proxy string) (string, []*http.Cookie, error) {
 		return "", nil, err
 	}
 
-	csrfToken, exists := dom.Find("input[type='hidden'][name='token']").Eq(0).Attr("value")
+	CSRFToken, exists := dom.Find("input[type='hidden'][name='token']").Eq(0).Attr("value")
 	if !exists {
-		return "", nil, errors.New("csrftoken doesn't exist")
+		return "", nil, errors.New("CSRFToken doesn't exist")
 	}
 
 	u2, _ := url.Parse(urls.RootPath)
-	return csrfToken, client.Jar.Cookies(u2), nil
+	return CSRFToken, client.Jar.Cookies(u2), nil
 }
 
 // GetAuth 登录schannel并返回登陆成功后获得的cookies
 // 这些cookies在后续的页面访问中需要使用
 func GetAuth(user, passwd, proxy string) ([]*http.Cookie, error) {
-	client, err := genClientWithProxy(proxy)
+	client, err := GenClientWithProxy(proxy)
 	if err != nil {
 		return nil, err
 	}
 
-	csrfToken, session, err := GetCsrfToken(proxy)
+	CSRFToken, session, err := GetCSRFToken(proxy)
 	if err != nil {
 		return nil, err
 	}
 
 	form := url.Values{}
-	form.Set("token", csrfToken)
+	form.Set("token", CSRFToken)
 	form.Set("username", user)
 	form.Set("password", passwd)
 	getLogin, err := http.NewRequest("POST", urls.LoginPath, strings.NewReader(form.Encode()))
@@ -74,7 +74,7 @@ func GetAuth(user, passwd, proxy string) ([]*http.Cookie, error) {
 		return nil, err
 	}
 
-	setRequestHeader(getLogin, session, urls.AccountPath)
+	SetRequestHeader(getLogin, session, urls.AccountPath, "gzip")
 	getLogin.Header.Set("content-type", "application/x-www-form-urlencoded")
 
 	resp, err := client.Do(getLogin)

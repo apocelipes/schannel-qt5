@@ -17,11 +17,11 @@ const (
 	AcceptType = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
 )
 
-// genClientWithProxy 生成httpclient，并设置代理为proxy指定的代理服务器
+// GenClientWithProxy 生成http.Client，并设置代理为proxy指定的代理服务器
 // proxy url支持http，https和socks5协议
-func genClientWithProxy(proxy string) (*http.Client, error) {
+func GenClientWithProxy(proxy string) (*http.Client, error) {
 	client := new(http.Client)
-	// all cookiejar's users should use "golang.org/x/net/publicsuffix"
+	// all cookieJar users should use "golang.org/x/net/publicsuffix"
 	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	if err != nil {
 		return nil, err
@@ -40,11 +40,13 @@ func genClientWithProxy(proxy string) (*http.Client, error) {
 	return client, nil
 }
 
-// setRequestHeader 设置请求头信息
-// cookies为nil时将被忽略，referer为“”时同样被忽略
-func setRequestHeader(request *http.Request, cookies []*http.Cookie, referer string) {
+// SetRequestHeader 设置请求头信息
+// cookies为nil时将被忽略，referer和compress为“”时同样被忽略
+func SetRequestHeader(request *http.Request, cookies []*http.Cookie, referer, compress string) {
 	request.Header.Set("accept", AcceptType)
-	request.Header.Set("accept-encoding", "gzip")
+	if compress != "" {
+		request.Header.Set("accept-encoding", compress)
+	}
 	if referer != "" {
 		request.Header.Set("referer", referer)
 	}
@@ -57,7 +59,7 @@ func setRequestHeader(request *http.Request, cookies []*http.Cookie, referer str
 
 // getPage 获取url指定的各种账户管理页面信息, cookies用于身份认证
 func getPage(url, referer string, cookies []*http.Cookie, proxy string) (string, error) {
-	client, err := genClientWithProxy(proxy)
+	client, err := GenClientWithProxy(proxy)
 	if err != nil {
 		return "", err
 	}
@@ -66,7 +68,7 @@ func getPage(url, referer string, cookies []*http.Cookie, proxy string) (string,
 	if err != nil {
 		return "", err
 	}
-	setRequestHeader(request, cookies, referer)
+	SetRequestHeader(request, cookies, referer, "gzip")
 
 	resp, err := client.Do(request)
 	if err != nil {
