@@ -28,6 +28,8 @@ type UserDataBridge interface {
 	GetLogger() *log.Logger
 	// GetCookies 获取用户的cookie
 	GetCookies() []*http.Cookie
+	// GetProxy 获取代理地址
+	GetProxy() string
 }
 
 // accountDataProxy 用于获取和缓存用户数据的代理类
@@ -154,4 +156,12 @@ func (a *accountDataProxy) GetCookies() []*http.Cookie {
 	copy(cookies, a.cookies)
 
 	return cookies
+}
+
+// GetProxy 获取代理地址
+func (a *accountDataProxy) GetProxy() string {
+	a.Lock()
+	defer a.Unlock()
+
+	return a.proxy
 }
