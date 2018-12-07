@@ -67,6 +67,7 @@ func NewHTTPDownloader2(url, referer, proxy string,
 
 	downloader.responses = make(chan *http.Response, 1)
 	go func() {
+		defer close(downloader.responses)
 		response, err := downloader.client.Do(downloader.request)
 		if err != nil {
 			downloader.Failed(err)
@@ -74,7 +75,6 @@ func NewHTTPDownloader2(url, referer, proxy string,
 		}
 
 		downloader.responses <- response
-		close(downloader.responses)
 	}()
 
 	return downloader, nil
@@ -103,6 +103,7 @@ func (d *HTTPDownloader) Download(file string) {
 	totalSize, err := d.TotalSize()
 	if err != nil {
 		d.Failed(err)
+		return
 	}
 	defer d.resp.Body.Close()
 	d.UpdateMax(totalSize)
@@ -110,6 +111,7 @@ func (d *HTTPDownloader) Download(file string) {
 	f, err := os.OpenFile(file, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		d.Failed(err)
+		return
 	}
 	defer f.Close()
 
@@ -126,12 +128,14 @@ func (d *HTTPDownloader) Download(file string) {
 		n, err := d.resp.Body.Read(buf)
 		if err != nil {
 			d.Failed(err)
+			return
 		}
 
 		// golang的writer屏蔽了部分写，因此只需要检查err
 		_, err = f.Write(buf[:n])
 		if err != nil {
 			d.Failed(err)
+			return
 		}
 
 		wrote += n
