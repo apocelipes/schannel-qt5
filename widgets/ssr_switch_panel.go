@@ -87,7 +87,6 @@ func (s *SSRSwitchPanel) SortNode() {
 
 // InitUI 初始化界面
 func (s *SSRSwitchPanel) InitUI() {
-	group := widgets.NewQGroupBox2("ssr开关", nil)
 	componentLayout := widgets.NewQGridLayout2()
 
 	s.nodeInfo = NewNodeInfoPanelWithNode(s.currentNode)
@@ -144,10 +143,7 @@ func (s *SSRSwitchPanel) InitUI() {
 	componentLayout.AddWidget3(s.selectNodeButton, 3, 1, 1, 1, 0)
 	componentLayout.AddWidget3(s.switchButton, 3, 2, 1, 1, 0)
 
-	group.SetLayout(componentLayout)
-	mainLayout := widgets.NewQVBoxLayout()
-	mainLayout.AddWidget(group, 0, 0)
-	s.SetLayout(mainLayout)
+	s.SetLayout(componentLayout)
 }
 
 // setSSRStat 设置ssr客户端是否正在运行的状态信息

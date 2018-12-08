@@ -181,11 +181,15 @@ func (dialog *InvoiceDialog) copyLink(link string) {
 
 // invoiceContextMenu 显示table中invoice的右键菜单选项
 func (dialog *InvoiceDialog) invoiceContextMenu(_ *gui.QContextMenuEvent) {
+	invoice := dialog.invoices[dialog.table.CurrentRow()]
+	dialog.link.SetText(invoice.Link)
+	dialog.copyLink(invoice.Link)
+
 	menu := widgets.NewQMenu(dialog)
 	menu.AddAction("下载")
 	menu.ConnectTriggered(func(action *widgets.QAction) {
 		if action.Text() == "下载" {
-			dialog.download()
+			dialog.download(invoice)
 		}
 	})
 
@@ -211,11 +215,7 @@ func (dialog *InvoiceDialog) downloadFinish(file string) {
 
 // download 下载选定的账单
 // 更新statusbar，启动另一个goroutine进行下载并反馈进度
-func (dialog *InvoiceDialog) download() {
-	invoice := dialog.invoices[dialog.table.CurrentRow()]
-	dialog.link.SetText(invoice.Link)
-	dialog.copyLink(invoice.Link)
-
+func (dialog *InvoiceDialog) download(invoice *parser.Invoice) {
 	home := os.Getenv("HOME")
 	if home == "" {
 		showErrorDialog("未找到$HOME，无法保存", dialog)
