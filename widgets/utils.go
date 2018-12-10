@@ -205,8 +205,8 @@ func computeRange(dataSet []int, ratio int, unit string) (float64, float64) {
 	}
 	sort.Float64s(data)
 
-	max := math.Trunc(data[len(data)-1] * 10 + 0.5) / 10
-	min := math.Trunc(data[0] * 10 + 0.5) / 10
+	max := math.Trunc(data[len(data)-1]*10+0.5) / 10
+	min := math.Trunc(data[0]*10+0.5) / 10
 
-	return math.Max(min - tuning, 0), max + tuning
+	return math.Max(min-tuning, 0), max + tuning
 }

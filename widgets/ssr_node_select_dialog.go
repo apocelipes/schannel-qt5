@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/therecipe/qt/widgets"
 
@@ -111,39 +110,30 @@ func (dialog *NodeSelectDialog) getNodeNames() []string {
 
 // saveNode 保存节点信息至文件
 func (dialog *NodeSelectDialog) saveNode(_ bool) {
-	home := os.Getenv("HOME")
-	if home == "" {
-		showErrorDialog("未找到$HOME，无法保存", dialog)
-		return
-	}
 	jsonFileFilter := "JSON Files(*.json)"
 	nodeFileName := fmt.Sprintf("%s.json", dialog.CurrentNode.NodeName)
-	defaultSavePath := filepath.Join(home, nodeFileName)
-
-	savePath := widgets.QFileDialog_GetSaveFileName(dialog,
-		"保存",
-		defaultSavePath,
-		jsonFileFilter,
-		"",
-		0)
-	if savePath == "" {
+	savePath, err := getFileSavePath("node", nodeFileName, jsonFileFilter, dialog)
+	if err == ErrCanceled {
+		return
+	} else if err != nil {
+		showErrorDialog("保存路径获取失败："+err.Error(), dialog)
 		return
 	}
 
 	data, err := json.MarshalIndent(dialog.CurrentNode, "", "\t")
 	if err != nil {
-		showErrorDialog("配置解析失败：" + err.Error(), dialog)
+		showErrorDialog("配置解析失败："+err.Error(), dialog)
 		return
 	}
 	f, err := os.OpenFile(savePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		showErrorDialog("文件创建失败：" + err.Error(), dialog)
+		showErrorDialog("文件创建失败："+err.Error(), dialog)
 		return
 	}
 	defer f.Close()
 	_, err = f.Write(data)
 	if err != nil {
-		showErrorDialog("写入配置失败：" + err.Error(), dialog)
+		showErrorDialog("写入配置失败："+err.Error(), dialog)
 		return
 	}
 

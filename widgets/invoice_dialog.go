@@ -2,8 +2,6 @@ package widgets
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/therecipe/qt/core"
@@ -216,20 +214,14 @@ func (dialog *InvoiceDialog) downloadFinish(file string) {
 // download 下载选定的账单
 // 更新statusbar，启动另一个goroutine进行下载并反馈进度
 func (dialog *InvoiceDialog) download(invoice *parser.Invoice) {
-	home := os.Getenv("HOME")
-	if home == "" {
-		showErrorDialog("未找到$HOME，无法保存", dialog)
-		return
-	}
 	defaultName := fmt.Sprintf("账单-%s.pdf", invoice.Number)
-	defaultPath := filepath.Join(home, defaultName)
-	file := widgets.QFileDialog_GetSaveFileName(dialog,
-		"保存账单",
-		defaultPath,
-		"PDF Files(*.pdf)",
-		"",
-		0)
-	if file == "" {
+	filter := "PDF Files(*.pdf)"
+	// 获取上次保存文件的目录
+	savePath, err := getFileSavePath("invoice", defaultName, filter, dialog)
+	if err == ErrCanceled {
+		return
+	} else if err != nil {
+		showErrorDialog("保存路径获取失败："+err.Error(), dialog)
 		return
 	}
 
@@ -278,9 +270,9 @@ func (dialog *InvoiceDialog) download(invoice *parser.Invoice) {
 	})
 	downloader.ConnectDone(func() {
 		progressDialog.Cancel()
-		dialog.DownloadFinish(file)
+		dialog.DownloadFinish(savePath)
 	})
 
-	go downloader.Download(file)
+	go downloader.Download(savePath)
 	progressDialog.Exec()
 }
