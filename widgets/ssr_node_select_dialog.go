@@ -139,10 +139,5 @@ func (dialog *NodeSelectDialog) saveNode(_ bool) {
 		return
 	}
 
-	infoButton := widgets.QMessageBox__Yes
-	widgets.QMessageBox_Information4(dialog,
-		"保存成功",
-		savePath+"保存成功",
-		infoButton,
-		infoButton)
+	ShowNotification("节点", savePath+"保存成功", "", 0)
 }

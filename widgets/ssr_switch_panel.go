@@ -121,7 +121,8 @@ func (s *SSRSwitchPanel) InitUI() {
 	s.switchButton = widgets.NewQPushButton(nil)
 	s.setSwitchLabel()
 	s.switchButton.ConnectClicked(func(_ bool) {
-		switch s.switchButton.Text() {
+		text := s.switchButton.Text()
+		switch text {
 		case "打开":
 			if err := s.ssrClient.Start(); err != nil {
 				errInfo := fmt.Sprintf("启动客户端错误: %v", err)
@@ -136,6 +137,8 @@ func (s *SSRSwitchPanel) InitUI() {
 			}
 		}
 
+		info := fmt.Sprintf("已%s", text)
+		go ShowNotification("SSR客户端", info, "", 0)
 		s.setSSRStat()
 		s.setConnStat()
 		s.setSwitchLabel()
@@ -167,6 +170,7 @@ func (s *SSRSwitchPanel) setConnStat() {
 		errInfo := fmt.Sprintf("error: %v", err)
 		s.connStat.SetColorText(errInfo, "red")
 		s.logger.Println(errInfo)
+		go ShowNotification("SSR连接测试失败", errInfo, "", 0)
 		return
 	}
 
@@ -188,6 +192,7 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 	// 停止旧的客户端运行
 	if running := s.ssrClient.IsRunning(); running == nil {
 		s.ssrClient.Stop()
+		go ShowNotification("SSR客户端", "已关闭", "", 0)
 		s.switchButton.SetText("打开")
 	}
 	s.conf = conf

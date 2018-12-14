@@ -99,6 +99,8 @@ func (w *ConfigWidget) SaveConfig() {
 
 	// 设置状态为已保存
 	w.setSaved(true)
+	// 显示配置保存成功信息
+	go ShowNotification("配置保存", "配置保存成功", "", 0)
 	// 通知其他组件配置发生变化
 	w.ConfigChanged(w.conf)
 }

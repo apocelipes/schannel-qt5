@@ -229,6 +229,7 @@ func (l *LoginWidget) checkLogin() {
 
 	// 传递登录信息
 	l.logger.Printf("logined as [%s] success\n", user)
+	go ShowNotification("登录", user+"登陆成功", "", 0)
 	l.LoginSuccess(user, cookies)
 }
 

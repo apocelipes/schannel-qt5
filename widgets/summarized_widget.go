@@ -101,6 +101,7 @@ func (sw *SummarizedWidget) dataRefresh() {
 	sw.invoicePanel.UpdateInvoices(sw.dataBridge.Invoices())
 	sw.switchPanel.DataRefresh(sw.conf, ssrInfo.Nodes)
 	sw.usedPanel.DataRefresh(ssrInfo)
+	go ShowNotification("数据更新", "数据更新成功", "", 0)
 }
 
 // SetService 重新设置service，可用于更新数据
@@ -110,9 +111,10 @@ func (sw *SummarizedWidget) SetService(service *parser.Service) {
 }
 
 // UpdateConfig 当config更新时刷新switchPanel
-// 一般用作ConfigWidget的信号处理函数
+// 一般用作ConfigWidget的ConfigChanged信号处理函数
 func (sw *SummarizedWidget) UpdateConfig(conf *config.UserConfig) {
 	sw.conf = conf
 	nodes := sw.dataBridge.SSRInfos(sw.service).Nodes
 	sw.switchPanel.DataRefresh(sw.conf, nodes)
+	go ShowNotification("配置更新", "配置更新成功", "", 0)
 }

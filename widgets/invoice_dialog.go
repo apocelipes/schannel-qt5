@@ -203,12 +203,7 @@ func (dialog *InvoiceDialog) errorHappened(errInfo string) {
 // 下载完成，显示成功信息
 func (dialog *InvoiceDialog) downloadFinish(file string) {
 	info := fmt.Sprintf("%s下载成功", file)
-	infoButton := widgets.QMessageBox__Yes
-	widgets.QMessageBox_Information4(dialog,
-		"保存成功",
-		info,
-		infoButton,
-		infoButton)
+	go ShowNotification("账单", info, "", 0)
 }
 
 // download 下载选定的账单
