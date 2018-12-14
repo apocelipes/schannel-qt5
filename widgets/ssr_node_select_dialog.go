@@ -85,8 +85,10 @@ func (dialog *NodeSelectDialog) InitUI() {
 	saveNodeButton.ConnectClicked(dialog.saveNode)
 
 	mainLayout := widgets.NewQGridLayout2()
-	mainLayout.AddLayout(listLayout, 0, 0, 0)
-	mainLayout.AddWidget3(dialog.detail, 0, 1, 1, 3, 0)
+	contentLayout := widgets.NewQHBoxLayout()
+	contentLayout.AddLayout(listLayout, 1)
+	contentLayout.AddWidget(dialog.detail, 2, 0)
+	mainLayout.AddLayout2(contentLayout, 0, 0, 1, 4, 0)
 	// 水平分割线
 	hFrame := widgets.NewQFrame(nil, 0)
 	hFrame.SetFrameStyle(int(widgets.QFrame__HLine) | int(widgets.QFrame__Sunken))
