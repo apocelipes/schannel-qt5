@@ -14,37 +14,41 @@ const (
 	defaultNotifyDelay = 3 * time.Second
 )
 
-// ShowNotification 显示libnotify实现的气泡消息框
-// duration == 0时使用默认delay
+// ShowNotification 显示org.freedesktop.Notifications气泡消息框
+// duration == -1时使用默认delay
+// duration == 0表示不设置超时，desktop notification将会一直显示
 // 出错信息输出到stderr，不进入log
 func ShowNotification(title, text, image string, delay time.Duration) {
-	notifyDelay := duration2millisecond(delay)
-	if notifyDelay == 0 {
+	var notifyDelay int32
+	if delay == -1 {
 		notifyDelay = duration2millisecond(defaultNotifyDelay)
+	} else {
+		notifyDelay = duration2millisecond(delay)
+		// 不合法值(包括duration不足1ms)，使用默认值进行替换
+		if notifyDelay == -1 {
+			notifyDelay = duration2millisecond(defaultNotifyDelay)
+		}
 	}
 
 	libnotify.Init(applicationName)
-	defer libnotify.UnInit()
 
 	notify := libnotify.NotificationNew(title, text, image)
 	if notify == nil {
 		fmt.Fprintf(os.Stderr, "Unable to create a new notification\n")
 		return
 	}
-	defer libnotify.NotificationClose(notify)
-	libnotify.NotificationSetTimeout(notify, notifyDelay)
+	notify.SetTimeout(notifyDelay)
 
-	libnotify.NotificationShow(notify)
-	// 保证有足够的时间让notify显示
-	time.Sleep(time.Duration(notifyDelay)*time.Millisecond + 1*time.Second)
+	// TODO: also show icon
+	notify.Show()
 }
 
 // duration2millisecond 将time.Duration转换成millisecond
-// duration不足1ms将返回0
+// duration不足1ms将返回-1
 func duration2millisecond(duration time.Duration) int32 {
 	res := int32(duration / time.Millisecond)
-	if res <= 0 {
-		return 0
+	if res < 0 {
+		return -1
 	}
 
 	return res

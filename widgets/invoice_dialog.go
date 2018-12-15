@@ -203,7 +203,7 @@ func (dialog *InvoiceDialog) errorHappened(errInfo string) {
 // 下载完成，显示成功信息
 func (dialog *InvoiceDialog) downloadFinish(file string) {
 	info := fmt.Sprintf("%s下载成功", file)
-	go ShowNotification("账单", info, "", 0)
+	ShowNotification("账单", info, "", -1)
 }
 
 // download 下载选定的账单

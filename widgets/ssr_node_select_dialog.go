@@ -139,5 +139,5 @@ func (dialog *NodeSelectDialog) saveNode(_ bool) {
 		return
 	}
 
-	ShowNotification("节点", savePath+"保存成功", "", 0)
+	ShowNotification("节点", savePath+"保存成功", "", -1)
 }
