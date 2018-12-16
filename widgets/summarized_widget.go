@@ -1,10 +1,18 @@
 package widgets
 
 import (
+	"compress/gzip"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"syscall"
+
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
+	"schannel-qt5/geoip"
 	"schannel-qt5/parser"
 )
 
@@ -29,6 +37,8 @@ type SummarizedWidget struct {
 	usedPanel *UsedPanel
 	// 是否需要付款
 	invoicePanel *InvoicePanel
+	// 下载GeoIP Database
+	getGeoButton *widgets.QPushButton
 
 	// 用户名-email
 	user string
@@ -80,7 +90,21 @@ func (sw *SummarizedWidget) InitUI() {
 	leftLayout.AddWidget(sw.servicePanel, 0, 0)
 	leftLayout.AddWidget(sw.invoicePanel, 0, 0)
 	leftLayout.AddStretch(0)
-	leftLayout.AddWidget(updateButton, 0, core.Qt__AlignRight)
+	buttonLayout := widgets.NewQHBoxLayout()
+	buttonLayout.AddStretch(0)
+
+	geoPath, err := geoip.GetGeoIPSavePath()
+	dbPath := filepath.Join(geoPath, geoip.DatabaseName)
+	if err != nil {
+		logger.Println(err)
+	} else if err := syscall.Access(dbPath, syscall.F_OK); err != nil {
+		logger.Println("未下载GeoIP数据库")
+		sw.getGeoButton = widgets.NewQPushButton2("下载GeoIP数据库", nil)
+		sw.getGeoButton.ConnectClicked(sw.downloadGeoIPDatabase)
+		buttonLayout.AddWidget(sw.getGeoButton, 0, core.Qt__AlignRight)
+	}
+	buttonLayout.AddWidget(updateButton, 0, core.Qt__AlignRight)
+	leftLayout.AddLayout(buttonLayout, 0)
 
 	rightLayout := widgets.NewQVBoxLayout()
 	rightLayout.AddWidget(sw.switchPanel, 0, 0)
@@ -117,4 +141,97 @@ func (sw *SummarizedWidget) UpdateConfig(conf *config.UserConfig) {
 	nodes := sw.dataBridge.SSRInfos(sw.service).Nodes
 	sw.switchPanel.DataRefresh(sw.conf, nodes)
 	ShowNotification("配置更新", "配置更新成功", "", -1)
+}
+
+// 下载GeoIP数据库的回调函数
+func (sw *SummarizedWidget) downloadGeoIPDatabase(_ bool) {
+	geoPath, err := geoip.GetGeoIPSavePath()
+	if err != nil {
+		info := fmt.Sprintf("GetGeoIPSavePath error: %v", err)
+		showErrorDialog(info, sw)
+		return
+	}
+
+	if err := syscall.Access(geoPath, syscall.F_OK); err != nil {
+		err = os.MkdirAll(geoPath, 0775)
+		if err != nil {
+			info := fmt.Sprintf("make download dir: %s error: %v", geoPath, err)
+			showErrorDialog(info, sw)
+			return
+		}
+	}
+	savePath := filepath.Join(geoPath, "GeoLite2-City.mmdb.gz")
+
+	downloader, err := NewHTTPDownloader2(geoip.DownloadPath, "", "", nil)
+	if err != nil {
+		info := fmt.Sprintf("downloader error: %v", err)
+		showErrorDialog(info, sw)
+		return
+	}
+
+	progressDialog := getProgressDialog("下载地理信息", "GeoIP Database下载进度：", sw)
+	progressDialog.ConnectCanceled(func() {
+		downloader.Stop()
+		progressDialog.Cancel()
+		showErrorDialog("下载已取消", sw)
+	})
+	downloader.ConnectUpdateProgress(func(size int) {
+		if progressDialog.WasCanceled() {
+			return
+		}
+
+		progressDialog.SetValue(size)
+	})
+	downloader.ConnectUpdateMax(progressDialog.SetMaximum)
+	downloader.ConnectFailed(func(err error) {
+		info := fmt.Sprintf("下载发生错误: %v", err)
+		showErrorDialog(info, sw)
+	})
+	downloader.ConnectDone(func() {
+		progressDialog.Cancel()
+
+		// 解压缩数据库
+		f, err := os.Open(savePath)
+		if err != nil {
+			showErrorDialog(err.Error(), sw)
+			return
+		}
+		defer f.Close()
+		greader, err := gzip.NewReader(f)
+		if err != nil {
+			showErrorDialog(err.Error(), sw)
+			return
+		}
+		defer greader.Close()
+
+		dbPath := filepath.Join(geoPath, geoip.DatabaseName)
+		dbFile, err := os.OpenFile(dbPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			showErrorDialog(err.Error(), sw)
+			return
+		}
+		defer dbFile.Close()
+
+		buf, err := ioutil.ReadAll(greader)
+		if err != nil {
+			showErrorDialog(err.Error(), sw)
+			return
+		}
+		_, err = dbFile.Write(buf)
+		if err != nil {
+			showErrorDialog(err.Error(), sw)
+			return
+		}
+
+		ShowNotification("下载", "地理信息数据下载完成", "", -1)
+		os.Remove(savePath)
+		sw.getGeoButton.Hide()
+		// 更新switch面板的GeoIP信息
+		ssrInfo := sw.dataBridge.SSRInfos(sw.service)
+		sw.switchPanel.DataRefresh(sw.conf, ssrInfo.Nodes)
+		sw.dataBridge.GetLogger().Println("GeoIP Database下载成功")
+	})
+
+	go downloader.Download(savePath)
+	progressDialog.Exec()
 }

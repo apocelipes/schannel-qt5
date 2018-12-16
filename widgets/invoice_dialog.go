@@ -238,14 +238,7 @@ func (dialog *InvoiceDialog) download(invoice *parser.Invoice) {
 		return
 	}
 
-	progressDialog := widgets.NewQProgressDialog(dialog, 0)
-	progressDialog.SetAttribute(core.Qt__WA_DeleteOnClose, true)
-	progressDialog.SetCancelButtonText("取消")
-	progressDialog.SetLabelText("账单文件下载进度：")
-	progressDialog.SetRange(0, 0)
-	progressDialog.SetAutoReset(false)
-	progressDialog.SetWindowTitle("保存账单")
-
+	progressDialog := getProgressDialog("保存账单", "账单下载进度：", dialog)
 	progressDialog.ConnectCanceled(func() {
 		downloader.Stop()
 		progressDialog.Cancel()

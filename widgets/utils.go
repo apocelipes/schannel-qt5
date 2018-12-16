@@ -2,7 +2,9 @@ package widgets
 
 import (
 	"errors"
+	"fmt"
 	"math"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -11,6 +13,7 @@ import (
 	"time"
 
 	"schannel-qt5/config"
+	"schannel-qt5/geoip"
 )
 
 const (
@@ -29,18 +32,6 @@ var (
 	usedMatcher = regexp.MustCompile(`(.+)(GB|MB|KB)`)
 	// 匹配linux kernel版本 A.B.C
 	versionMatcher = regexp.MustCompile(`(\d+\.\d+\.\d+)`)
-	// 名字对应的国家/地区/城市缩写
-	geoAreaName = map[string]string{
-		"US":    "美国",
-		"SG":    "新加坡",
-		"Tokyo": "日本",
-		"EUR":   "欧洲",
-		"AMSD":  "阿姆斯特丹",
-		"LA":    "洛杉矶",
-		"ALT":   "亚特兰大",
-		"FRK":   "美因河畔法兰克福",
-		"SDY":   "悉尼",
-	}
 )
 
 // convertToKb 将string类型的流量数据转换成以kb为单位的int
@@ -150,25 +141,23 @@ func checkEmptyPath(path string) error {
 	return checkPath(path)
 }
 
-// getGeoName 根据节点名字获取对应地区信息
-func getGeoName(name string) string {
-	areas := strings.Split(name, "_")
-	// 名字不符合area_number
-	if len(areas) <= 1 {
+// getGeoName 根据节点IP获取对应地区信息
+func getGeoName(ip string) string {
+	country, city, err := geoip.GetCountryCity(ip, "zh-CN")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "GeoIP error: %v\n", err)
+	}
+
+	// city和country有一个不为空就返回
+	if country == "" && city == "" {
 		return "Unknown"
+	} else if country == "" {
+		return city
+	} else if city == "" {
+		return country
 	}
 
-	areaName := make([]string, 0, len(areas)-1)
-	// 最后一个元素为节点编号，忽略
-	for _, v := range areas[:len(areas)-1] {
-		if n, ok := geoAreaName[v]; ok {
-			areaName = append(areaName, n)
-		} else {
-			areaName = append(areaName, "Unknown")
-		}
-	}
-
-	return strings.Join(areaName, "-")
+	return strings.Join([]string{country, city}, "-")
 }
 
 // computeSizeUnit 计算图表适用的size单位，为KB，MB或GB

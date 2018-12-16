@@ -55,3 +55,16 @@ func getFileSavePath(service, fileName, filter string, parent widgets.QWidget_IT
 
 	return savePath, nil
 }
+
+// GetProgressDialog 返回经过配置的QProgressDialog
+func getProgressDialog(title, label string, parent widgets.QWidget_ITF) *widgets.QProgressDialog {
+	progressDialog := widgets.NewQProgressDialog(parent, 0)
+	progressDialog.SetAttribute(core.Qt__WA_DeleteOnClose, true)
+	progressDialog.SetCancelButtonText("取消")
+	progressDialog.SetLabelText(label)
+	progressDialog.SetRange(0, 0)
+	progressDialog.SetAutoReset(false)
+	progressDialog.SetWindowTitle(title)
+
+	return progressDialog
+}

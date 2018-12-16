@@ -37,7 +37,7 @@ func NewNodeInfoPanelWithNode(node *parser.SSRNode) *NodeInfoPanel {
 func (n *NodeInfoPanel) InitUI() {
 	n.SetTitle("ssr摘要:")
 
-	geoInfo := getGeoName(n.node.NodeName)
+	geoInfo := getGeoName(n.node.IP)
 	n.geoInfoLabel = widgets.NewQLabel2(geoInfo, nil, 0)
 	n.ipLabel = widgets.NewQLabel2(n.node.IP, nil, 0)
 	n.nodeNameLabel = widgets.NewQLabel2(n.node.NodeName, nil, 0)
@@ -59,7 +59,7 @@ func (n *NodeInfoPanel) InitUI() {
 // dataRefresh 刷新节点摘要信息
 func (n *NodeInfoPanel) dataRefresh(node *parser.SSRNode) {
 	n.node = node
-	geoInfo := getGeoName(n.node.NodeName)
+	geoInfo := getGeoName(n.node.IP)
 	n.nodeNameLabel.SetText(n.node.NodeName)
 	n.ipLabel.SetText(n.node.IP)
 	n.geoInfoLabel.SetText(geoInfo)

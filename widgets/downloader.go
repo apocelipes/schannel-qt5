@@ -94,7 +94,7 @@ func (d *HTTPDownloader) TotalSize() (int, error) {
 }
 
 const (
-	chunk = 1024 * 32 // 一次下载的数据块大小(byte)
+	chunk = 1024 * 200 // 一次下载的数据块大小(byte)
 )
 
 // Download 下载文件，每下载一个chunk长度出发一次UpdateProgress信号

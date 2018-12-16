@@ -107,5 +107,5 @@ func (n *NodeDetailWidget) SetNodeDetail(node *parser.SSRNode) {
 	n.crypt.SetText(node.Crypto)
 	n.mixin.SetText(node.Minx)
 	n.proto.SetText(node.Proto)
-	n.geo.SetText(getGeoName(node.NodeName))
+	n.geo.SetText(getGeoName(node.IP))
 }
