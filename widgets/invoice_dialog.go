@@ -76,9 +76,6 @@ func NewInvoiceDialogWithData(bridge UserDataBridge, data []*parser.Invoice) *In
 	// 设置表头
 	dialog.table.SetColumnCount(len(cols))
 	dialog.table.SetHorizontalHeaderLabels(cols)
-	// 设置链接列的列宽，以显示更完整的内容
-	linkColWidth := dialog.table.ColumnWidth(1) * 2
-	dialog.table.SetColumnWidth(1, linkColWidth)
 	// 去除边框
 	dialog.table.SetShowGrid(false)
 	dialog.table.SetFrameShape(widgets.QFrame__NoFrame)
@@ -102,6 +99,8 @@ func NewInvoiceDialogWithData(bridge UserDataBridge, data []*parser.Invoice) *In
 
 	// 设置不可编辑table
 	dialog.table.SetEditTriggers(widgets.QAbstractItemView__NoEditTriggers)
+	// Qt5.12.0无法正常折叠link text
+	dialog.table.ResizeColumnsToContents()
 
 	vbox := widgets.NewQVBoxLayout()
 	vbox.AddWidget(dialog.table, 0, 0)
