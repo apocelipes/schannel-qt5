@@ -30,6 +30,8 @@ ui_*.h
 *.jsc
 Makefile*
 *build-*
+rcc.cpp
+rcc_cgo_*
 
 # Qt unit tests
 target_wrapper.*
@@ -47,9 +49,6 @@ CMakeLists.txt.user*
 # Binaries for programs and plugins
 *.exe
 *.exe~
-*.dll
-*.so
-*.dylib
 
 # IDE
 .idea/*

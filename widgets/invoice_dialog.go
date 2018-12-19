@@ -183,7 +183,7 @@ func (dialog *InvoiceDialog) invoiceContextMenu(_ *gui.QContextMenuEvent) {
 	dialog.copyLink(invoice.Link)
 
 	menu := widgets.NewQMenu(dialog)
-	menu.AddAction("下载")
+	menu.AddAction2(gui.NewQIcon5(":/image/download.svg"), "下载")
 	menu.ConnectTriggered(func(action *widgets.QAction) {
 		if action.Text() == "下载" {
 			dialog.download(invoice)

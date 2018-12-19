@@ -56,6 +56,7 @@ func (m *MainWidget) InitUI() {
 	m.login.ConnectLoginSuccess(m.finishLogin)
 	m.SetWindowTitle("schannel-qt5")
 	m.SetCentralWidget(m.tab)
+	m.SetWindowIcon(gui.NewQIcon5(":/image/icon.svg"))
 }
 
 // finishLogin 登录成功后隐藏LoginWidget，显示summary和setting
