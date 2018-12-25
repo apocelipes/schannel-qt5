@@ -49,7 +49,8 @@ func (item *AccountItem) InitUI() {
 
 	delIcon := widgets.QApplication_Style().StandardIcon(widgets.QStyle__SP_DialogCloseButton, nil, nil)
 	item.delButton = widgets.NewQPushButton3(delIcon, "", nil)
-	item.delButton.SetStyleSheet("background:transparent;")
+	// 设置背景透明，x11上需要指定rgba
+	item.delButton.SetStyleSheet("QPushButton{background:rgba(0,0,0,0);border:1px solid rgba(0,0,0,0);}")
 	// 设置icon大小
 	iconHeight := item.accountName.FontMetrics().Height()
 	iconWidth := iconHeight

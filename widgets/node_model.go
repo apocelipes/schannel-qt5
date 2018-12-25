@@ -202,7 +202,7 @@ func (n *NodeTreeModel) parent(index *core.QModelIndex) *core.QModelIndex {
 }
 
 func (n *NodeTreeModel) columnCount(_ *core.QModelIndex) int {
-	return 1
+	return n.rootItem.ColumnCount()
 }
 
 // 每个节点的子节点数目
