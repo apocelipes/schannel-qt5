@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/parser"
@@ -41,10 +42,13 @@ func (panel *ServicePanel) InitUI(user string, info *parser.SSRInfo) {
 	panel.serviceName = widgets.NewQLabel(nil, 0)
 	userLabel := widgets.NewQLabel2("用户：", nil, 0)
 	panel.user = widgets.NewQLabel(nil, 0)
+	panel.user.SetTextInteractionFlags(core.Qt__TextSelectableByMouse)
 	portLabel := widgets.NewQLabel2("端口：", nil, 0)
 	panel.port = widgets.NewQLabel(nil, 0)
+	panel.port.SetTextInteractionFlags(core.Qt__TextSelectableByMouse)
 	passwordLabel := widgets.NewQLabel2("密码：", nil, 0)
 	panel.password = widgets.NewQLabel(nil, 0)
+	panel.password.SetTextInteractionFlags(core.Qt__TextSelectableByMouse)
 	paymentLabel := widgets.NewQLabel2("费用：", nil, 0)
 	panel.payment = widgets.NewQLabel(nil, 0)
 	expireLabel := widgets.NewQLabel2("过期时间：", nil, 0)

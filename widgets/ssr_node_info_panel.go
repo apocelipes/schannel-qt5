@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/parser"
@@ -40,7 +41,9 @@ func (n *NodeInfoPanel) InitUI() {
 	geoInfo := getGeoName(n.node.IP)
 	n.geoInfoLabel = widgets.NewQLabel2(geoInfo, nil, 0)
 	n.ipLabel = widgets.NewQLabel2(n.node.IP, nil, 0)
+	n.ipLabel.SetTextInteractionFlags(core.Qt__TextSelectableByMouse)
 	n.nodeNameLabel = widgets.NewQLabel2(n.node.NodeName, nil, 0)
+	n.nodeNameLabel.SetTextInteractionFlags(core.Qt__TextSelectableByMouse)
 
 	mainLayout := widgets.NewQGridLayout2()
 	name := widgets.NewQLabel2("节点名称:", nil, 0)

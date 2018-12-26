@@ -176,12 +176,12 @@ func computeSizeUnit(dataSet []int) (int, string) {
 	return KB, "KB"
 }
 
-// computeRange 计算坐标轴的range，四舍五入为1位小数后+/-0.5，使折线平滑
+// computeRange 计算坐标轴的range，四舍五入为1位小数后+/-tuning，使折线平滑
 func computeRange(dataSet []int, ratio int, unit string) (float64, float64) {
 	var tuning float64
 	switch unit {
 	case "GB":
-		tuning = 0.1
+		tuning = 0.075
 	case "MB":
 		tuning = 0.5
 	case "KB":
@@ -195,6 +195,7 @@ func computeRange(dataSet []int, ratio int, unit string) (float64, float64) {
 	}
 	sort.Float64s(data)
 
+	// 四舍五入，保留一位小数
 	max := math.Trunc(data[len(data)-1]*10+0.5) / 10
 	min := math.Trunc(data[0]*10+0.5) / 10
 

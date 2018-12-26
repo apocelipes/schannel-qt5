@@ -150,8 +150,8 @@ func TestComputeRange(t *testing.T) {
 			data:  []int{1782580 * KB, 2590 * MB, 2 * GB},
 			ratio: GB,
 			unit:  "GB",
-			min:   1.6,
-			max:   2.6,
+			min:   1.625,
+			max:   2.575,
 		},
 	}
 
