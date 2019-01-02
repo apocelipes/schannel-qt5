@@ -19,7 +19,8 @@ go get -u github.com/mattn/go-sqlite3
 go get -u github.com/PuerkitoBio/goquery
 cd $GOPATH/src
 git clone 'https://github.com/apocelipes/schannel-qt5'
-cd schannel-qt5/widgets && qtmoc
+cd schannel-qt5/widgets
+qtmoc && qtrcc 
 cd .. && go build
 ```
 
@@ -44,7 +45,7 @@ select nodes:
 
 service info & client switch:
 
-![service](screenshots/service.jpg)
+![service](screenshots/service.webp)
 
 user settings:
 
@@ -55,7 +56,7 @@ data charts:
 ![charts](screenshots/charts.png)
 
 ### Todo:
-- support system tray
+- support system tray icon
 - more clearly document
 - more tests
 
