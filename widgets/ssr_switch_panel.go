@@ -110,11 +110,14 @@ func (s *SSRSwitchPanel) InitUI() {
 	s.selectNodeButton = widgets.NewQPushButton2("选择节点", nil)
 	s.selectNodeButton.ConnectClicked(func(_ bool) {
 		dialog := NewNodeSelectDialog2(s.currentNode, s.nodes)
+		shade := NewShadeWidget2(s.NativeParentWidget())
+		shade.Show()
 		if dialog.Exec() == int(widgets.QDialog__Accepted) {
 			s.currentNode = dialog.CurrentNode
 			s.nodeInfo.DataRefresh(s.currentNode)
 		}
-		// goqt无法自动释放QDialog
+		shade.Close()
+		// goqt无法自动释放QWidget
 		// 且此处不适合DeleteOnClose，所以需要手动调用DestroyNodeSelectDialog
 		dialog.DestroyNodeSelectDialog()
 	})
