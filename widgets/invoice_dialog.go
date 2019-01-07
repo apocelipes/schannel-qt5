@@ -171,22 +171,31 @@ func (dialog *InvoiceDialog) setLink(item *widgets.QTableWidgetItem) {
 // copyLink 如果勾选了copy2Clipboard则将link复制到系统剪贴板
 func (dialog *InvoiceDialog) copyLink(link string) {
 	if dialog.copy2Clipboard.IsChecked() {
-		clip := gui.QGuiApplication_Clipboard()
-		clip.SetText(link, gui.QClipboard__Clipboard)
+		dialog.copy(link)
 	}
+}
+
+// copy 将值复制进剪贴板
+func (dialog *InvoiceDialog) copy(text string) {
+	clip := gui.QGuiApplication_Clipboard()
+	clip.SetText(text, gui.QClipboard__Clipboard)
 }
 
 // invoiceContextMenu 显示table中invoice的右键菜单选项
 func (dialog *InvoiceDialog) invoiceContextMenu(_ *gui.QContextMenuEvent) {
-	invoice := dialog.invoices[dialog.table.CurrentRow()]
-	dialog.link.SetText(invoice.Link)
-	dialog.copyLink(invoice.Link)
+	item := dialog.table.CurrentItem()
+	invoice := dialog.invoices[item.Row()]
+	dialog.setLink(item)
 
 	menu := widgets.NewQMenu(dialog)
+	menu.AddAction2(gui.NewQIcon5(":/image/ic_copy_link.svg"), "复制")
 	menu.AddAction2(gui.NewQIcon5(":/image/download.svg"), "下载")
 	menu.ConnectTriggered(func(action *widgets.QAction) {
-		if action.Text() == "下载" {
+		switch action.Text() {
+		case "下载":
 			dialog.download(invoice)
+		case "复制":
+			dialog.copy(invoice.Link)
 		}
 	})
 

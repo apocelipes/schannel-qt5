@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>image/icon.svg</file>
         <file>image/download.svg</file>
+        <file>image/ic_copy_link.svg</file>
     </qresource>
 </RCC>
