@@ -94,7 +94,10 @@ func (l *LoginWidget) InitUI() {
 			info := fmt.Sprintf("将删除用户：%s (同时删除使用数据)", userName)
 			buttons := widgets.QMessageBox__Yes | widgets.QMessageBox__Cancel
 			defaultButton := widgets.QMessageBox__Yes
+			shade := NewShadeWidget2(l.NativeParentWidget())
+			shade.Show()
 			answer := widgets.QMessageBox_Question4(l, "是否删除记录", info, buttons, defaultButton)
+			shade.Close()
 			if answer != int(widgets.QMessageBox__Yes) {
 				return
 			}
