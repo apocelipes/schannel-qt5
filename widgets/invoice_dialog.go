@@ -245,6 +245,7 @@ func (dialog *InvoiceDialog) download(invoice *parser.Invoice) {
 		showErrorDialog("获取下载器失败："+err.Error(), dialog)
 		return
 	}
+	downloader.SetParent(dialog)
 
 	progressDialog := getProgressDialog("保存账单", "账单下载进度：", dialog)
 	progressDialog.ConnectCanceled(func() {
