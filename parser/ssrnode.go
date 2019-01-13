@@ -2,7 +2,6 @@ package parser
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -67,12 +66,6 @@ func (s *SSRNode) Load(path string) error {
 	}
 
 	return nil
-}
-
-func (s *SSRNode) String() string {
-	format := "Name:%-10s IP:%-15s Port:%-5v Pswd:%-15s Crypto:%-11s Protocol:%-7s Obfs:%-6s"
-	res := fmt.Sprintf(format, s.NodeName, s.IP, s.Port, s.Passwd, s.Crypto, s.Proto, s.Minx)
-	return res
 }
 
 // NameNumber 获取节点的编号
