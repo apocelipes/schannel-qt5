@@ -103,8 +103,8 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 
 	// 可能存在多个服务
 	services := m.dataBridge.ServiceInfos()
-	for i, v := range services {
-		widget := NewSummarizedWidget2(i, m.user, v, m.conf, m.dataBridge)
+	for i, service := range services {
+		widget := NewSummarizedWidget2(i, m.user, service, m.conf, m.dataBridge)
 		// 处理更新请求
 		widget.ConnectServiceNeedUpdate(func(index int) {
 			services := m.dataBridge.ServiceInfos()
@@ -115,7 +115,8 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 		// 处理配置更新
 		m.setting.ConnectConfigChanged(widget.UpdateConfig)
 
-		m.tab.AddTab(widget, fmt.Sprintf("服务%d", i+1))
+		serviceTabName := fmt.Sprintf("服务%d：%s", i+1, service.Name)
+		m.tab.AddTab(widget, serviceTabName)
 		m.summary = append(m.summary, widget)
 		m.logger.Printf("已添加综合信息面板：服务%d\n", i+1)
 	}
