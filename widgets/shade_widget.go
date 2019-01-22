@@ -11,6 +11,7 @@ type ShadeWidget struct {
 }
 
 // NewShadeWidget2 返回parent的遮罩，将会遮住parent，Close后资源自动释放
+// 创建后自动调用Show()
 func NewShadeWidget2(parent *widgets.QWidget) *ShadeWidget {
 	shade := NewShadeWidget(parent, 0)
 	// 子控件设置Qt::WA_StyledBackground后才可设置背景
@@ -20,6 +21,7 @@ func NewShadeWidget2(parent *widgets.QWidget) *ShadeWidget {
 	shade.SetStyleSheet("background-color:rgba(0,0,0,102);")
 	shade.SetWindowFlags(core.Qt__FramelessWindowHint)
 	shade.SetGeometry2(0, 0, shade.ParentWidget().Width(), shade.ParentWidget().Height())
+	shade.Show()
 
 	return shade
 }

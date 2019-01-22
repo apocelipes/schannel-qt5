@@ -78,7 +78,6 @@ func (m *MainWidget) finishLogin(user string, cookies []*http.Cookie) {
 		buttons := widgets.QMessageBox__Yes | widgets.QMessageBox__Cancel | widgets.QMessageBox__No
 		defaultButton := widgets.QMessageBox__Cancel
 		shade := NewShadeWidget2(m.QWidget_PTR())
-		shade.Show()
 		answer := widgets.QMessageBox_Question4(m, "配置未保存", info, buttons, defaultButton)
 		shade.Close()
 		switch answer {

@@ -111,7 +111,6 @@ func (s *SSRSwitchPanel) InitUI() {
 	s.selectNodeButton.ConnectClicked(func(_ bool) {
 		dialog := NewNodeSelectDialog2(s.currentNode, s.nodes)
 		shade := NewShadeWidget2(s.NativeParentWidget())
-		shade.Show()
 		if dialog.Exec() == int(widgets.QDialog__Accepted) {
 			s.currentNode = dialog.CurrentNode
 			s.nodeInfo.DataRefresh(s.currentNode)

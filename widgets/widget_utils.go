@@ -26,7 +26,9 @@ func showErrorDialog(info string, parent widgets.QWidget_ITF) {
 	errMsg := widgets.NewQErrorMessage(parent)
 	errMsg.ShowMessage(info)
 	errMsg.SetAttribute(core.Qt__WA_DeleteOnClose, true)
+	shade := NewShadeWidget2(parent.QWidget_PTR().NativeParentWidget())
 	errMsg.Exec()
+	shade.Close()
 }
 
 var ErrCanceled = errors.New("QFileDialog canceled")

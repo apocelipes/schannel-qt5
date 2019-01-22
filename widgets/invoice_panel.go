@@ -60,10 +60,9 @@ func NewInvoicePanelWithData(bridge UserDataBridge) *InvoicePanel {
 
 // showInvoiceDialog 显示详细信息对话框
 func (panel *InvoicePanel) showInvoiceDialog(_ bool) {
-	shade := NewShadeWidget2(panel.NativeParentWidget())
 	dialog := NewInvoiceDialogWithData(panel.dataBridge, panel.invoices)
 	// 显示遮罩
-	shade.Show()
+	shade := NewShadeWidget2(panel.NativeParentWidget())
 	dialog.Exec()
 	shade.Close()
 }
