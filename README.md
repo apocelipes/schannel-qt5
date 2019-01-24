@@ -20,7 +20,7 @@ go get -u github.com/PuerkitoBio/goquery
 cd $GOPATH/src
 git clone 'https://github.com/apocelipes/schannel-qt5'
 cd schannel-qt5/widgets
-qtmoc && qtrcc 
+qtmoc && qtrcc
 cd .. && go build
 ```
 
@@ -54,6 +54,12 @@ user settings:
 data charts:
 
 ![charts](screenshots/charts.png)
+
+### important comfigurations:
+- `ssrclient.json`: Configure the behavior of the ssr client.
+- `~/.local/share/schannel-qt5.json`: Configure the behavior of the schannel-qt5.
+- `~/.local/share/schannel-users.db`: Store encrypted user information and traffic usage records (traffic records for chart display).
+- `~/.local/share/data/schannel-qt5/GeoIP/`: Store the GeoIP database.
 
 ### Todo:
 - support system tray icon
