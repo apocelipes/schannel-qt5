@@ -137,3 +137,22 @@ func GetInvoiceDownloadURL(data string) string {
 
 	return urls.RootPath + downloadURL
 }
+
+// GetInvoiceViewHTML 处理invoice html生成用于QWebEngine展示的页面
+func GetInvoiceViewHTML(data string) string {
+	dom, _ := goquery.NewDocumentFromReader(strings.NewReader(data))
+
+	// 修改css链接为绝对路径
+	dom.Find("head link").Each(func(_ int, link *goquery.Selection) {
+		if val, exists := link.Attr("href"); exists {
+			link.SetAttr("href", urls.RootPath+val[1:])
+		}
+	})
+
+	dom.Find(".hidden-print").Each(func(_ int, s *goquery.Selection) {
+		s.Remove()
+	})
+
+	ret, _ := dom.Html()
+	return ret
+}
