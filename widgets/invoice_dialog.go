@@ -122,6 +122,7 @@ func (dialog *InvoiceDialog) setDialogSize() {
 		width += dialog.table.ColumnWidth(i)
 	}
 	dialog.SetMinimumWidth(width)
+	dialog.Resize2(width, dialog.Height())
 }
 
 // setTable 设置table
