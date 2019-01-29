@@ -4,5 +4,6 @@
         <file>image/download.svg</file>
         <file>image/ic_copy_link.svg</file>
         <file>image/close.png</file>
+        <file>image/Removefixed.svg</file>
     </qresource>
 </RCC>

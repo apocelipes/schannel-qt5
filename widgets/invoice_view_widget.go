@@ -20,6 +20,9 @@ type InvoiceViewWidget struct {
 	webEngine *webengine.QWebEngineView
 	// 接受QWebEngineView事件的子对象
 	webEngineChild *core.QObject
+
+	// 窗口移动是否有效
+	moveAble bool
 }
 
 func (i *InvoiceViewWidget) init() {
@@ -29,13 +32,23 @@ func (i *InvoiceViewWidget) init() {
 	i.webEngine = webengine.NewQWebEngineView(nil)
 	i.SetCentralWidget(i.webEngine)
 
-	closeButton := NewTransparentButtonWithStyle("{background:url(close.png)}")
+	closeButton := NewTransparentButtonWithStyle("{background:url(:/image/close.png);}")
 	closeButton.Resize2(36, 36)
 	closeButton.SetParent(i)
 	closeButton.Move2(0, 0)
 	closeButton.ConnectClicked(func(_ bool) {
 		i.Close()
 	})
+	closeButton.SetToolTip("关闭窗口")
+	// fix window position
+	fixButton := NewTransparentButtonWithStyle("{background-color:blue;background-image:url(:/image/Removefixed.svg);}")
+	fixButton.Resize2(36, 36)
+	fixButton.SetParent(i)
+	fixButton.Move2(0, 36)
+	fixButton.ConnectClicked(func(_ bool) {
+		i.moveAble = !i.moveAble
+	})
+	fixButton.SetToolTip("禁止/允许拖动窗口")
 
 	// window move event
 	i.webEngine.ConnectMousePressEvent(func(event *gui.QMouseEvent) {
@@ -81,6 +94,11 @@ func (i *InvoiceViewWidget) init() {
 	// 处理鼠标事件
 	i.webEngine.ConnectEventFilter(func(watched *core.QObject, event *core.QEvent) bool {
 		if watched.Pointer() == i.webEngineChild.Pointer() {
+			// 窗口移动被禁止
+			if !i.moveAble {
+				return false
+			}
+
 			switch event.Type() {
 			case core.QEvent__MouseButtonPress:
 				mouseEvent := gui.NewQMouseEventFromPointer(event.Pointer())
@@ -106,13 +124,12 @@ func (i *InvoiceViewWidget) init() {
 		return i.webEngine.EventFilterDefault(watched, event)
 	})
 
-	// todo: 改为按钮实现
-	i.webEngine.ConnectContextMenuEvent(func(event *gui.QContextMenuEvent) {
-		menu := widgets.NewQMenu(i.webEngine)
-		menu.AddAction("停止窗口移动")
-		menu.Exec2(gui.QCursor_Pos(), nil)
-		menu.DestroyQMenu()
+	i.webEngine.ConnectContextMenuEvent(func(_ *gui.QContextMenuEvent) {
+		// 去除自带的右键菜单
 	})
+
+	// 设置合适的宽度完整显示invoice表格内容
+	i.Resize2(800, 650)
 }
 
 // 设置view展示的内容
