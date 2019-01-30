@@ -86,13 +86,12 @@ func NewInvoiceDialogWithData(bridge UserDataBridge, data []*parser.Invoice) *In
 	dialog.table.SetSelectionMode(widgets.QAbstractItemView__SingleSelection)
 	// 设置table的数据项目
 	dialog.setTable()
-	dialog.table.ConnectItemClicked(dialog.setLink)
 
 	dialog.table.ConnectCellClicked(func(row, col int) {
-		invoice := dialog.invoices[row]
-		dialog.selected.SetText(fmt.Sprintf("选中第%d行", row+1))
-		dialog.link.SetText(invoice.Link)
-		dialog.copyLink(invoice.Link)
+		dialog.setLink(dialog.invoices[row])
+	})
+	dialog.table.ConnectCellDoubleClicked(func(row int, column int) {
+		dialog.showInvoiceView(dialog.invoices[row])
 	})
 
 	dialog.table.ConnectContextMenuEvent(dialog.invoiceContextMenu)
@@ -122,7 +121,6 @@ func (dialog *InvoiceDialog) setDialogSize() {
 		width += dialog.table.ColumnWidth(i)
 	}
 	dialog.SetMinimumWidth(width)
-	dialog.Resize2(width, dialog.Height())
 }
 
 // setTable 设置table
@@ -161,9 +159,14 @@ func (dialog *InvoiceDialog) setTable() {
 }
 
 // setLink 当选中row中的单元格时将链接更新到infoBar
-func (dialog *InvoiceDialog) setLink(item *widgets.QTableWidgetItem) {
-	index := item.Row()
-	invoice := dialog.invoices[index]
+func (dialog *InvoiceDialog) setLink(invoice *parser.Invoice) {
+	index := 0
+	for i, v := range dialog.invoices {
+		if v == invoice {
+			index = i
+			break
+		}
+	}
 	dialog.selected.SetText(fmt.Sprintf("选中第%d行", index+1))
 	dialog.link.SetText(invoice.Link)
 	dialog.copyLink(invoice.Link)
@@ -182,11 +185,28 @@ func (dialog *InvoiceDialog) copy(text string) {
 	clip.SetText(text, gui.QClipboard__Clipboard)
 }
 
+// showInvoiceView 显示invoice对应的InvoiceViewWidget
+func (dialog *InvoiceDialog) showInvoiceView(invoice *parser.Invoice) {
+	dialog.setLink(invoice)
+
+	data, err := crawler.GetInvoiceInfoHTML(invoice,
+		dialog.dataBridge.GetCookies(),
+		dialog.dataBridge.GetProxy())
+	if err != nil {
+		dialog.dataBridge.GetLogger().Println("GetInvoiceInfoHTML error:", err)
+		return
+	}
+	viewHTML := parser.GetInvoiceViewHTML(string(data))
+
+	invoiceView := NewInvoiceViewWidget(dialog, 0)
+	invoiceView.SetHTML(viewHTML)
+	invoiceView.Show()
+}
+
 // invoiceContextMenu 显示table中invoice的右键菜单选项
 func (dialog *InvoiceDialog) invoiceContextMenu(_ *gui.QContextMenuEvent) {
-	item := dialog.table.CurrentItem()
-	invoice := dialog.invoices[item.Row()]
-	dialog.setLink(item)
+	invoice := dialog.invoices[dialog.table.CurrentItem().Row()]
+	dialog.setLink(invoice)
 
 	menu := widgets.NewQMenu(dialog)
 	menu.AddAction2(gui.NewQIcon5(":/image/ic_copy_link.svg"), "复制")

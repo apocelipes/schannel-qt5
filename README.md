@@ -39,6 +39,8 @@ invoices view:
 
 ![invoices](screenshots/invoices.png)
 
+![invoiceview](screenshots/invoiceview.webp)
+
 select nodes:
 
 ![nodes](screenshots/nodes.png)
