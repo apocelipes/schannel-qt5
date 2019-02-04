@@ -54,6 +54,7 @@ func NewLoginWidget2(conf *config.UserConfig, logger *log.Logger, db orm.Ormer) 
 func (l *LoginWidget) InitUI() {
 	l.username = widgets.NewQComboBox(nil)
 	l.username.SetEditable(true)
+	l.username.LineEdit().SetClearButtonEnabled(true)
 	users, err := models.GetAllUsers(l.db)
 	if err != nil {
 		l.logger.Fatalln(err)
