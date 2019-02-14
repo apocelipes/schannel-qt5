@@ -2,6 +2,7 @@ package widgets
 
 import (
 	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
 )
 
@@ -21,6 +22,10 @@ func NewShadeWidget2(parent *widgets.QWidget) *ShadeWidget {
 	shade.SetStyleSheet("background-color:rgba(0,0,0,102);")
 	shade.SetWindowFlags(core.Qt__FramelessWindowHint)
 	shade.SetGeometry2(0, 0, shade.ParentWidget().Width(), shade.ParentWidget().Height())
+	// 防止parent最大化后遮罩不能完全遮盖parent（部分窗口管理器中模态对话框的父窗口仍可最大化）
+	parent.ConnectResizeEvent(func(event *gui.QResizeEvent) {
+		shade.SetGeometry2(0, 0, shade.ParentWidget().Width(), shade.ParentWidget().Height())
+	})
 	shade.Show()
 
 	return shade
