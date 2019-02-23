@@ -18,9 +18,6 @@ import (
 type SSRSwitchPanel struct {
 	widgets.QWidget
 
-	// ssr client是否启动
-	ssrStat *ColorLabel
-
 	// node缩略信息
 	nodeInfo *NodeInfoPanel
 
@@ -31,7 +28,7 @@ type SSRSwitchPanel struct {
 	connStat *ColorLabel
 
 	// ssr开关
-	switchButton *widgets.QPushButton
+	switchButton *SwitchButton
 	// 选择节点对话框按钮
 	selectNodeButton *widgets.QPushButton
 
@@ -92,20 +89,43 @@ func (s *SSRSwitchPanel) InitUI() {
 	s.nodeInfo = NewNodeInfoPanelWithNode(s.currentNode)
 	componentLayout.AddWidget3(s.nodeInfo, 0, 0, 1, 3, 0)
 
-	ssrStatLabel := widgets.NewQLabel2("ssr状态:", nil, 0)
-	s.ssrStat = NewColorLabelWithColor("", "")
-	s.setSSRStat()
-	componentLayout.AddWidget(ssrStatLabel, 1, 0, 0)
-	componentLayout.AddWidget3(s.ssrStat, 1, 1, 1, 2, 0)
-
 	s.connStat = NewColorLabelWithColor("", "")
 	// 设置自动换行
 	s.connStat.AdjustSize()
 	s.connStat.SetWordWrap(true)
 	s.setConnStat()
 	connStatLabel := widgets.NewQLabel2("连接状态:", nil, 0)
-	componentLayout.AddWidget(connStatLabel, 2, 0, 0)
-	componentLayout.AddWidget3(s.connStat, 2, 1, 1, 2, 0)
+	componentLayout.AddWidget(connStatLabel, 1, 0, 0)
+	componentLayout.AddWidget3(s.connStat, 1, 1, 1, 2, 0)
+
+	s.switchButton = NewSwitchButton2(s.ssrClient.IsRunning() == nil)
+	s.switchButton.ConnectClicked(func(checked bool) {
+		info := ""
+		switch checked {
+		case true:
+			if err := s.ssrClient.Start(); err != nil {
+				errInfo := fmt.Sprintf("启动客户端错误: %v", err)
+				showErrorDialog(errInfo, s)
+				return
+			}
+
+			info = "已打开"
+		case false:
+			if err := s.ssrClient.Stop(); err != nil {
+				errInfo := fmt.Sprintf("关闭客户端错误: %v", err)
+				showErrorDialog(errInfo, s)
+				return
+			}
+
+			info = "已关闭"
+		}
+
+		ShowNotification("SSR客户端", info, "", -1)
+		s.setConnStat()
+	})
+	switchLabel := widgets.NewQLabel2("ssr开关：", nil, 0)
+	componentLayout.AddWidget(switchLabel, 2, 0, 0)
+	componentLayout.AddWidget3(s.switchButton, 2, 1, 1, 2, 0)
 
 	s.selectNodeButton = widgets.NewQPushButton2("选择节点", nil)
 	s.selectNodeButton.ConnectClicked(func(_ bool) {
@@ -120,45 +140,9 @@ func (s *SSRSwitchPanel) InitUI() {
 		// 且此处不适合DeleteOnClose，所以需要手动调用DestroyNodeSelectDialog
 		dialog.DestroyNodeSelectDialog()
 	})
-	s.switchButton = widgets.NewQPushButton(nil)
-	s.setSwitchLabel()
-	s.switchButton.ConnectClicked(func(_ bool) {
-		text := s.switchButton.Text()
-		switch text {
-		case "打开":
-			if err := s.ssrClient.Start(); err != nil {
-				errInfo := fmt.Sprintf("启动客户端错误: %v", err)
-				showErrorDialog(errInfo, s)
-				return
-			}
-		case "关闭":
-			if err := s.ssrClient.Stop(); err != nil {
-				errInfo := fmt.Sprintf("关闭客户端错误: %v", err)
-				showErrorDialog(errInfo, s)
-				return
-			}
-		}
-
-		info := fmt.Sprintf("已%s", text)
-		ShowNotification("SSR客户端", info, "", -1)
-		s.setSSRStat()
-		s.setConnStat()
-		s.setSwitchLabel()
-	})
-	componentLayout.AddWidget3(s.selectNodeButton, 3, 1, 1, 1, 0)
-	componentLayout.AddWidget3(s.switchButton, 3, 2, 1, 1, 0)
+	componentLayout.AddWidget3(s.selectNodeButton, 3, 2, 1, 1, 0)
 
 	s.SetLayout(componentLayout)
-}
-
-// setSSRStat 设置ssr客户端是否正在运行的状态信息
-func (s *SSRSwitchPanel) setSSRStat() {
-	if err := s.ssrClient.IsRunning(); err != nil {
-		s.ssrStat.SetColorText("未运行", "red")
-		return
-	}
-
-	s.ssrStat.SetColorText("正在运行", "green")
 }
 
 // setConnStat 设置代理节点是否可用的信息
@@ -179,23 +163,13 @@ func (s *SSRSwitchPanel) setConnStat() {
 	s.connStat.SetColorText("OK", "green")
 }
 
-// setSwitchLabel 设置开关按钮的label
-func (s *SSRSwitchPanel) setSwitchLabel() {
-	if err := s.ssrClient.IsRunning(); err != nil {
-		s.switchButton.SetText("打开")
-		return
-	}
-
-	s.switchButton.SetText("关闭")
-}
-
 // DataRefresh 更新config和nodes
 func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SSRNode) {
 	// 停止旧的客户端运行
 	if running := s.ssrClient.IsRunning(); running == nil {
 		s.ssrClient.Stop()
+		s.switchButton.SetChecked(false)
 		ShowNotification("SSR客户端", "已关闭", "", -1)
-		s.switchButton.SetText("打开")
 	}
 	s.conf = conf
 	s.ssrClient = ssr.NewLauncher("python", s.conf)
@@ -214,12 +188,11 @@ func (s *SSRSwitchPanel) DataRefresh(conf *config.UserConfig, nodes []*parser.SS
 	s.currentNode = &parser.SSRNode{}
 	nodeConfigPath, err := s.conf.SSRNodeConfigPath.AbsPath()
 	if err != nil {
-		// 节点配置获取失败，错误信息显示在ssr状态上
-		s.ssrStat.SetColorText(err.Error(), "red")
+		// 节点配置获取失败，错误信息用信息框显示
+		showErrorDialog(err.Error(), s)
 		return
 	}
 	s.currentNode.Load(nodeConfigPath)
 	s.nodeInfo.DataRefresh(s.currentNode)
 	s.setConnStat()
-	s.setSSRStat()
 }

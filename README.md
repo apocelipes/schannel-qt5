@@ -10,7 +10,7 @@ A QT based GUI client for [schannel](https://schannel.net/) - written in Golang
 - use charts to show data more clearly
 
 ### Installation
-At first we need to install [thetheripe/qt](https://github.com/therecipe/qt)
+At first we need to install [therecipe/qt](https://github.com/therecipe/qt)
 
 Then:
 ```bash
@@ -47,7 +47,9 @@ select nodes:
 
 service info & client switch:
 
-![service](screenshots/service.webp)
+![client-turn-off](screenshots/service1.webp)
+
+![client-turn-off](screenshots/service2.webp)
 
 user settings:
 
@@ -57,7 +59,7 @@ data charts:
 
 ![charts](screenshots/charts.png)
 
-### important comfigurations:
+### important configurations:
 - `ssrclient.json`: Configure the behavior of the ssr client.
 - `~/.local/share/schannel-qt5.json`: Configure the behavior of the schannel-qt5.
 - `~/.local/share/schannel-users.db`: Store encrypted user information and traffic usage records (traffic records for chart display).
