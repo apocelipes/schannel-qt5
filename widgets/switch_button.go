@@ -99,18 +99,21 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 		background = s.uncheckedColor
 	}
 
-	border := 1
+	border := 1.0
+	heightF := float64(s.Height())
+	widthF := float64(s.Width())
+
 	backgroundPath := gui.NewQPainterPath()
 	// 背景色条区域，起点：x为0+边框宽度，y为高度减去上下边框后的上部1/4处
 	// 宽为宽度减去左右边框，高为高度减去上下边框后的1/2
-	backgroundRect := core.NewQRectF4(float64(border),
-		float64((s.Height()-2*border)/4+border),
-		float64(s.Width()-2*border),
-		float64(s.Height()-2*border)/2,
+	backgroundRect := core.NewQRectF4(border,
+		(heightF-2*border)/4+border,
+		widthF-2*border,
+		(heightF-2*border)/2,
 	)
 	backgroundPath.AddRoundedRect(backgroundRect,
-		float64(s.Height()-2*border)/4,
-		float64(s.Height()-2*border)/4,
+		(heightF-2*border)/4,
+		(heightF-2*border)/4,
 		core.Qt__AbsoluteSize,
 	)
 	backgroundPath.CloseSubpath()
@@ -129,14 +132,14 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 	}
 
 	// 按钮可移动距离，宽减去高（按钮大小和高一致，不包括边框）
-	moveWidth := (s.Width() - 2*border) - (s.Height() - 2*border)
-	indicatorSize := s.Height() - 2*border
+	moveWidth := (widthF - 2*border) - (heightF - 2*border)
+	indicatorSize := heightF - 2*border
 	indicatorPath := gui.NewQPainterPath()
 	// 按钮绘制的起点为边框+可移动距离*当前需要移动的比例
-	indicatorRect := core.NewQRectF4(float64(moveWidth)*moveRatio+float64(border),
-		float64(border),
-		float64(indicatorSize),
-		float64(indicatorSize),
+	indicatorRect := core.NewQRectF4(moveWidth*moveRatio+border,
+		border,
+		indicatorSize,
+		indicatorSize,
 	)
 	indicatorPath.AddEllipse(indicatorRect)
 	indicatorPath.CloseSubpath()
@@ -145,10 +148,10 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 	// 位于按钮正中的小圆点宽高均为按钮1/2也就是整体控件高度的1/4
 	// 为了突出白色按钮的显示效果而添加，颜色与背景色相同
 	indicatorCenterRect := core.NewQRectF4(
-		float64(moveWidth)*moveRatio+float64(s.Height())*3.0/8,
-		float64(s.Height())*3.0/8,
-		float64(s.Height())/4,
-		float64(s.Height())/4,
+		moveWidth*moveRatio+heightF*3.0/8,
+		heightF*3/8,
+		heightF/4,
+		heightF/4,
 	)
 	indicatorCenterPath.AddEllipse(indicatorCenterRect)
 	indicatorCenterPath.CloseSubpath()
@@ -157,24 +160,24 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 	// checked为false时位于宽度75%处
 	// 上下距离背景色条的距离均为3/8的height，高度为height的1/4暨背景色条的1/2
 	sepPath := gui.NewQPainterPath()
-	sepRect := core.NewQRectF4(float64(s.Width())*math.Abs(moveRatio-3.0/4),
-		float64(s.Height())*3.0/8,
-		float64(s.Width())/20,
-		float64(s.Height())/4,
+	sepRect := core.NewQRectF4(widthF*math.Abs(moveRatio-3.0/4),
+		heightF*3/8,
+		widthF/20,
+		heightF/4,
 	)
 	sepPath.AddRect(sepRect)
 	sepPath.CloseSubpath()
 
 	// 背景色条的边框
 	backgroundBorderRect := core.NewQRectF4(0,
-		float64(s.Height())/4,
-		float64(s.Width()),
-		float64(s.Height())/2,
+		heightF/4,
+		widthF,
+		heightF/2,
 	)
 	painter.SetPen2(gui.NewQColor2(core.Qt__lightGray))
 	painter.DrawRoundedRect(backgroundBorderRect,
-		float64(s.Height())/4,
-		float64(s.Height())/4,
+		heightF/4,
+		heightF/4,
 		core.Qt__AbsoluteSize,
 	)
 
@@ -184,10 +187,10 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 	painter.FillPath(indicatorCenterPath, gui.NewQBrush3(background, core.Qt__SolidPattern))
 
 	// 按钮的边框
-	indicatorBorderRect := core.NewQRectF4(float64(s.Width()-s.Height())*moveRatio,
+	indicatorBorderRect := core.NewQRectF4((widthF-heightF)*moveRatio,
 		0,
-		float64(s.Height()),
-		float64(s.Height()),
+		heightF,
+		heightF,
 	)
 	painter.DrawEllipse(indicatorBorderRect)
 
