@@ -23,8 +23,13 @@ func GetService(data string) []*Service {
 	table, _ := goquery.NewDocumentFromReader(strings.NewReader(data))
 	// id为tableServicesList的table里有所有的服务信息
 	table.Find("#tableServicesList tbody tr").Each(func(i int, s *goquery.Selection) {
-		ser := new(Service)
 		tds := s.Find("td")
+		if tds.Eq(3).Text() == "已暂停" {
+			// 滤除已暂停的服务
+			return
+		}
+
+		ser := new(Service)
 		// 第一列是服务名称
 		ser.Name = tds.Eq(0).Text()
 		// 第二列是详细信息页面链接和价格
@@ -59,6 +64,7 @@ func GetSSRInfo(data string, ser *Service) *SSRInfo {
 	// 第3个section的header里是套餐总量
 	usageInfo := sections.Eq(2)
 	total := usageInfo.Find("header").Text()
+	total = strings.TrimSpace(total)
 	res.TotalData = getTotal.FindStringSubmatch(total)[1]
 
 	usage := usageInfo.Find("#plugin-usage").Find("p")
