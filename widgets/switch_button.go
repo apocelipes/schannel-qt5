@@ -194,8 +194,8 @@ func (s *SwitchButton) paintEvent(_ *gui.QPaintEvent) {
 	)
 	painter.DrawEllipse(indicatorBorderRect)
 
-	// 因为golang没有析构函数，需要手动调用End
-	painter.End()
+	// golang没有析构函数且painter为分配在堆上的对象，需要手动释放
+	painter.DestroyQPainter()
 }
 
 // 返回按钮是否处于打开状态
