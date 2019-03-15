@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/therecipe/qt/core"
 	"log"
 	"os"
 
@@ -35,6 +36,7 @@ func init() {
 
 func main() {
 	app := std_widgets.NewQApplication(len(os.Args), os.Args)
+	app.SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 
 	// 初始化用户配置
 	conf := &config.UserConfig{}
