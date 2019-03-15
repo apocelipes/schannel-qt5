@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/therecipe/qt/core"
 	"log"
 	"os"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/therecipe/qt/core"
 	std_widgets "github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"

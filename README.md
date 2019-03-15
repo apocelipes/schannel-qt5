@@ -24,6 +24,8 @@ qtmoc && qtrcc
 cd .. && go build
 ```
 
+Note that schannel-qt5 needs golang >= go1.12.
+
 Now you can enjoy schannel-qt5!
 
 ### Screenshots

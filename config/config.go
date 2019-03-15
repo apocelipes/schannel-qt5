@@ -39,8 +39,8 @@ type UserConfig struct {
 
 // ConfigPath 返回`～`被替换为$HOME的config path
 func ConfigPath() (string, error) {
-	home, exist := os.LookupEnv("HOME")
-	if !exist {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return "", ErrHOME
 	}
 

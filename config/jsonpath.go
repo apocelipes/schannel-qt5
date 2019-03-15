@@ -46,8 +46,8 @@ func (jp *JSONPath) AbsPath() (string, error) {
 		return "", ErrNotAbs
 	}
 
-	home, exist := os.LookupEnv("HOME")
-	if !exist {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return "", ErrHOME
 	}
 

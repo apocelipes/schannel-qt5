@@ -22,8 +22,8 @@ func init() {
 
 // GetDBPath 获取数据库存放路径
 func GetDBPath() (string, error) {
-	home, exist := os.LookupEnv("HOME")
-	if !exist {
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return "", config.ErrHOME
 	}
 

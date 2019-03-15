@@ -18,6 +18,7 @@ func TestAbsPath(t *testing.T) {
 	}
 
 	// 测试~开头的HOME下路径
+	os.Clearenv()
 	err = os.Setenv("HOME", "/home/testing")
 	if err != nil {
 		t.Errorf("set $HOME ERROR: %v\n", err)

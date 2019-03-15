@@ -20,9 +20,9 @@ const (
 
 // GetGeoIPSavePath 返回完整的数据库路径，默认在$HOME/.local/share/data/schannel-qt5/GeoIP下
 func GetGeoIPSavePath() (string, error) {
-	home := os.Getenv("HOME")
-	if home == "" {
-		return "", errors.New("cannot find $HOME")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", errors.New("cannot find user home dir")
 	}
 
 	return filepath.Join(home, geoIPSavePath), nil

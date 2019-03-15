@@ -172,12 +172,17 @@ func TestGetDBPath(t *testing.T) {
 			res:  "/home/test/" + databasePath,
 		},
 		{
-			home: "/home/test/",
-			res:  "/home/test/" + databasePath,
+			home: "/home/user1/",
+			res:  "/home/user1/" + databasePath,
+		},
+		{
+			home: "/home/用户/",
+			res:  "/home/用户/" + databasePath,
 		},
 	}
 
 	for _, v := range testData {
+		os.Clearenv()
 		err := os.Setenv("HOME", v.home)
 		if err != nil {
 			t.Fatalf("无法设置$HOME: %v\n", err)

@@ -21,9 +21,14 @@ func TestConfigPath(t *testing.T) {
 			home: "/home/test/",
 			res:  "/home/test/" + configPath,
 		},
+		{
+			home: "/home/用户1/",
+			res:  "/home/用户1/" + configPath,
+		},
 	}
 
 	for _, v := range testData {
+		os.Clearenv()
 		err := os.Setenv("HOME", v.home)
 		if err != nil {
 			t.Fatalf("无法设置$HOME: %v\n", err)
