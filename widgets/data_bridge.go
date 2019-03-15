@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/therecipe/qt/core"
+
 	"schannel-qt5/crawler"
 	"schannel-qt5/parser"
 )
@@ -71,6 +73,9 @@ func (a *accountDataProxy) checkCacheExpired() {
 		a.logger.Printf(dataBridgePrefix+"%v\n", err)
 		return
 	}
+	// 防止界面假死
+	// 放在所有耗时的网络操作之后
+	core.QCoreApplication_ProcessEvents(core.QEventLoop__ExcludeUserInputEvents)
 
 	servicesList := parser.GetService(servicesHTML)
 	tmp := make([]*parser.SSRInfo, 0, len(servicesList))
@@ -80,6 +85,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 			a.logger.Printf(dataBridgePrefix+"%v\n", err)
 			return
 		}
+		core.QCoreApplication_ProcessEvents(core.QEventLoop__ExcludeUserInputEvents)
 
 		ssrInfo := parser.GetSSRInfo(infoHTML, ser)
 		tmp = append(tmp, ssrInfo)
@@ -87,6 +93,7 @@ func (a *accountDataProxy) checkCacheExpired() {
 	a.ssrInfos = tmp
 
 	invoiceHTML, err := crawler.GetInvoiceHTML(a.cookies, a.proxy)
+	core.QCoreApplication_ProcessEvents(core.QEventLoop__ExcludeUserInputEvents)
 	if err != nil {
 		a.logger.Printf(dataBridgePrefix+"%v\n", err)
 		return
