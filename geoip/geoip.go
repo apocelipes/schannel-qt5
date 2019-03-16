@@ -28,23 +28,33 @@ func GetGeoIPSavePath() (string, error) {
 	return filepath.Join(home, geoIPSavePath), nil
 }
 
-// GetCountryCity 返回ip的国家/地区和城市名称
-// lang为语言名称，e.g. "zh-CN", "en"
-func GetCountryCity(ip string, lang string) (string, string, error) {
+// getRecord 根据ip返回geoIP查询结果
+func getRecord(ip string) (*geoip2.City, error) {
 	dbDir, err := GetGeoIPSavePath()
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	dbPath := filepath.Join(dbDir, DatabaseName)
 	db, err := geoip2.Open(dbPath)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer db.Close()
 
 	ipAddr := net.ParseIP(ip)
 	record, err := db.City(ipAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return record, nil
+}
+
+// GetCountryCity 返回ip的国家/地区和城市名称
+// lang为语言名称，e.g. "zh-CN", "en"
+func GetCountryCity(ip string, lang string) (string, string, error) {
+	record, err := getRecord(ip)
 	if err != nil {
 		return "", "", err
 	}
@@ -62,4 +72,14 @@ func GetCountryCity(ip string, lang string) (string, string, error) {
 	}
 
 	return country, city, nil
+}
+
+// GetCountryISOCode 获取国家代码
+func GetCountryISOCode(ip string) (string, error) {
+	record, err := getRecord(ip)
+	if err != nil {
+		return "", nil
+	}
+
+	return record.Country.IsoCode, nil
 }

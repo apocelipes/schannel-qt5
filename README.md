@@ -19,12 +19,16 @@ go get -u github.com/mattn/go-sqlite3
 go get -u github.com/PuerkitoBio/goquery
 cd $GOPATH/src
 git clone 'https://github.com/apocelipes/schannel-qt5'
+# install country flags info
+git clone 'https://github.com/matiassingers/emoji-flags' schannel-qt5/emoji-flags
 cd schannel-qt5/widgets
 qtmoc && qtrcc
 cd .. && go build
 ```
 
 Note that schannel-qt5 needs golang >= go1.12.
+
+Because of the flaw in QFont on x11, schannel-qt5 can't set its own font without fontconfig, so you need to install the font "NotoColorEmoji" to support emoji.
 
 Now you can enjoy schannel-qt5!
 

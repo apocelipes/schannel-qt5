@@ -6,4 +6,7 @@
         <file>image/close.png</file>
         <file>image/Removefixed.svg</file>
     </qresource>
+    <qresource prefix="/flags">
+        <file alias="data.json">emoji-flags/data.json</file>
+    </qresource>
 </RCC>

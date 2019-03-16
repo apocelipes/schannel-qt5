@@ -1,12 +1,28 @@
 package widgets
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 
+	"schannel-qt5/geoip"
 	"schannel-qt5/parser"
 )
+
+var CountryFlags = make([]map[string]string, 0)
+
+func init() {
+	// 获取countryCode对应的flag emoji
+	flagData := core.NewQFile2(":/flags/data.json")
+	flagData.Open(core.QIODevice__ReadOnly)
+	err := json.Unmarshal([]byte(flagData.ReadAll().Data()), &CountryFlags)
+	if err != nil {
+		CountryFlags = nil
+	}
+	flagData.Close()
+}
 
 // NodeTreeItem 将节点保存成地区/名字的树形结构
 type NodeTreeItem struct {
@@ -221,6 +237,28 @@ func (n *NodeTreeModel) data(index *core.QModelIndex, role int) *core.QVariant {
 	}
 
 	item := NewNodeTreeItemFromPointer(index.InternalPointer())
+	// 处理顶层节点
+	if item.parent.Data() == "" {
+		switch role {
+		case int(core.Qt__FontRole):
+			font := gui.NewQFont2("noto color emoji", -1, -1, false)
+			return core.NewQVariant3(int(core.QVariant__Font), font.Pointer())
+		case int(core.Qt__DisplayRole):
+			if CountryFlags == nil {
+				break
+			}
+
+			// 在顶层节点显示国旗
+			if country, err := geoip.GetCountryISOCode(item.LatestChild(0).node.IP); err == nil {
+				for i := range CountryFlags {
+					if country == CountryFlags[i]["code"] {
+						return core.NewQVariant17(CountryFlags[i]["emoji"] + " " + item.Data())
+					}
+				}
+			}
+		}
+	}
+
 	switch role {
 	case int(core.Qt__DisplayRole):
 		return core.NewQVariant17(item.Data())

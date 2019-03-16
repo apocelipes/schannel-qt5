@@ -67,3 +67,5 @@ widgets/rcc_cgo_*.go
 
 # go build result
 schannel-qt5
+
+emoji-flags/
