@@ -3,6 +3,7 @@ package widgets
 import (
 	"fmt"
 
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/parser"
@@ -44,7 +45,10 @@ func NewNodeDetailWidgetWithNode(node *parser.SSRNode) *NodeDetailWidget {
 func (n *NodeDetailWidget) InitUI() {
 	mainLayout := widgets.NewQGridLayout2()
 	title := widgets.NewQLabel2("节点信息", nil, 0)
-	mainLayout.AddWidget3(title, 0, 0, 1, 2, 0)
+	titleFontSize := float64(title.FontMetrics().AverageCharWidth()) * 1.5
+	title.Font().SetPixelSize(int(titleFontSize))
+	titleAlign := core.Qt__AlignHCenter | core.Qt__AlignTop
+	mainLayout.AddWidget3(title, 0, 0, 1, 2, titleAlign)
 
 	nameLabel := widgets.NewQLabel2("节点名称：", nil, 0)
 	n.name = widgets.NewQLabel(nil, 0)
