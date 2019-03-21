@@ -2,8 +2,8 @@ package widgets
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
-	"syscall"
 	"time"
 
 	libnotify "github.com/mqu/go-notify"
@@ -14,9 +14,10 @@ const (
 	applicationName = "schannel-qt5"
 	// 默认气泡框显示时间
 	defaultNotifyDelay = 3 * time.Second
-	// 临时存放图标
-	tmpIconPath = "/tmp/schannel-qt5-icon.svg"
 )
+
+// 图标文件对象缓存
+var iconFileData = make([]byte, 0)
 
 // ShowNotification 显示org.freedesktop.Notifications气泡消息框
 // duration == -1时使用默认delay
@@ -36,19 +37,23 @@ func ShowNotification(title, text, image string, delay time.Duration) {
 
 	libnotify.Init(applicationName)
 
-	if err := syscall.Access(tmpIconPath, syscall.F_OK); err != nil && image == "" {
+	if len(iconFileData) == 0 {
 		iconFile := core.NewQFile2(":/image/icon.svg")
 		iconFile.Open(core.QIODevice__ReadOnly)
-		tmpIcon := core.NewQFile2(tmpIconPath)
-		tmpIcon.Open(core.QIODevice__WriteOnly | core.QIODevice__Truncate)
-		tmpIcon.Write2(iconFile.ReadAll().Data())
+		iconFileData = append(iconFileData, iconFile.ReadAll().Data()...)
 		iconFile.Close()
-		tmpIcon.Close()
 	}
 
-	if image == "" {
-		image = tmpIconPath
+	tmpIcon, err := ioutil.TempFile("", "schannel-qt5.*.svg")
+	if err == nil {
+		tmpIcon.Write(iconFileData)
+		defer os.Remove(tmpIcon.Name())
+		defer tmpIcon.Close()
+		if image == "" {
+			image = tmpIcon.Name()
+		}
 	}
+
 	notify := libnotify.NotificationNew(title, text, image)
 	if notify == nil {
 		fmt.Fprintf(os.Stderr, "Unable to create a new notification\n")
