@@ -15,11 +15,6 @@ const (
 	amountPath = "/tmp/used_amount.db"
 )
 
-func init() {
-	orm.Debug = true
-	orm.RegisterDataBase("testAmount", "sqlite3", amountPath)
-}
-
 // 用于amount插入测试的结构
 type dummyAmount struct {
 	service                 *parser.Service

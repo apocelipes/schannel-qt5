@@ -16,9 +16,11 @@ const (
 	dbPath = "/tmp/db_users_test.db"
 )
 
-func init() {
-	orm.RegisterDataBase("default", "sqlite3", dbPath)
+func TestMain(m *testing.M) {
 	orm.Debug = true
+	orm.RegisterDataBase("default", "sqlite3", dbPath)
+	orm.RegisterDataBase("testAmount", "sqlite3", amountPath)
+	os.Exit(m.Run())
 }
 
 // initUserDB 初始化测试数据
