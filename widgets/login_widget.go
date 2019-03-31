@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
 
 	"schannel-qt5/config"
@@ -143,11 +144,13 @@ func (l *LoginWidget) InitUI() {
 		info, err := models.GetUserPassword(l.db, names[0])
 		if err != nil {
 			l.logger.Println(err)
-		} else if info.Passwd != "" {
-			// 密码不为空，设置密码和选中记住密码
-			l.password.SetText(string(info.Passwd))
-			l.username.SetCurrentText(info.Name)
-			l.remember.SetChecked(true)
+		} else {
+			if info.Passwd != "" {
+				// 密码不为空，设置密码和选中记住密码
+				l.password.SetText(string(info.Passwd))
+				l.username.SetCurrentText(info.Name)
+				l.remember.SetChecked(true)
+			}
 		}
 	}
 	// 实现记住用户密码
@@ -177,6 +180,12 @@ func (l *LoginWidget) InitUI() {
 	mainLayout.AddRow6(loginLayout)
 	mainLayout.AddRow5(l.indicator)
 	l.SetLayout(mainLayout)
+	sizePolicy := l.SizePolicy()
+	sizePolicy.SetHorizontalPolicy(widgets.QSizePolicy__Minimum)
+	l.SetSizePolicy(sizePolicy)
+	l.ConnectSizeHint(func() *core.QSize {
+		return core.NewQSize2(360, 180)
+	})
 }
 
 func (l *LoginWidget) login(_ bool) {
@@ -253,7 +262,6 @@ func (l *LoginWidget) setPassword(user string) {
 	if err != nil {
 		// 输入的用户名未记录
 		l.logger.Println(err)
-		l.username.SetCurrentText(user)
 	} else if info.Passwd != "" {
 		l.password.SetText(string(info.Passwd))
 		l.remember.SetChecked(true)
