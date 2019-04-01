@@ -71,6 +71,13 @@ data charts:
 - `~/.local/share/schannel-users.db`: Store encrypted user information and traffic usage records (traffic records for chart display).
 - `~/.local/share/data/schannel-qt5/GeoIP/`: Store the GeoIP database.
 
+### Options in schannel-qt5.json:
+- `proxy_url`: The proxy server address used by schannel-qt5, or empty if you don't use a proxy.
+- `log_file`: schannel-qt5's log file, uses stdout if it is empty.
+- `ssr_node_config_path`: The path of a ssr node config file.
+- `ssr_client_config_path"`: The path of ssr client config file.
+- `ssr_bin`: The path of ssr client bin.
+
 ### Todo:
 - support system tray icon
 - more clearly document
