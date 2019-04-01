@@ -16,6 +16,10 @@ var (
 	getTotal    = regexp.MustCompile(`.+ \(流量：(.+(?:GB|MB|KB))\)`)
 )
 
+func isServiceValid(stat string) bool {
+	return stat == "有效的"
+}
+
 // GetService 返回所有可用的套餐的信息
 func GetService(data string) []*Service {
 	res := make([]*Service, 0)
@@ -24,7 +28,7 @@ func GetService(data string) []*Service {
 	// id为tableServicesList的table里有所有的服务信息
 	table.Find("#tableServicesList tbody tr").Each(func(i int, s *goquery.Selection) {
 		tds := s.Find("td")
-		if tds.Eq(3).Text() == "已暂停" {
+		if !isServiceValid(tds.Eq(3).Text()) {
 			// 滤除已暂停的服务
 			return
 		}

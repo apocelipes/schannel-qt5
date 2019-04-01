@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/oschwald/geoip2-golang"
 )
@@ -82,4 +84,26 @@ func GetCountryISOCode(ip string) (string, error) {
 	}
 
 	return record.Country.IsoCode, nil
+}
+
+// IsGeoIPOutdated 判断数据库文件是否过期
+// 文件不存在时也会返回true
+func IsGeoIPOutdated(expires time.Duration) bool {
+	dbPath, err := GetGeoIPSavePath()
+	if err != nil {
+		return true
+	}
+
+	stat, err := os.Stat(dbPath)
+	if err != nil {
+		return true
+	}
+
+	cTime := timespec2Time(stat.Sys().(*syscall.Stat_t).Ctim)
+	now := time.Now()
+	return now.Sub(cTime) >= expires
+}
+
+func timespec2Time(ts syscall.Timespec) time.Time {
+	return time.Unix(int64(ts.Sec), int64(ts.Nsec))
 }

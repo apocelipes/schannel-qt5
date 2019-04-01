@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/widgets"
@@ -102,6 +103,12 @@ func (sw *SummarizedWidget) InitUI() {
 		sw.getGeoButton = widgets.NewQPushButton2("下载GeoIP数据库", nil)
 		sw.getGeoButton.ConnectClicked(sw.downloadGeoIPDatabase)
 		buttonLayout.AddWidget(sw.getGeoButton, 0, core.Qt__AlignRight)
+	} else if geoip.IsGeoIPOutdated(24 * time.Hour * 30) {
+		// GeoIP数据有效期为30天，超过后需要更新
+		logger.Println("GeoIP数据库需要更新")
+		sw.getGeoButton = widgets.NewQPushButton2("更新GeoIP数据库", nil)
+		sw.getGeoButton.ConnectClicked(sw.downloadGeoIPDatabase)
+		buttonLayout.AddWidget(sw.getGeoButton, 0, core.Qt__AlignRight)
 	}
 	buttonLayout.AddWidget(updateButton, 0, core.Qt__AlignRight)
 	leftLayout.AddLayout(buttonLayout, 0)
@@ -168,6 +175,7 @@ func (sw *SummarizedWidget) downloadGeoIPDatabase(_ bool) {
 		showErrorDialog(info, sw)
 		return
 	}
+	downloader.SetParent(sw)
 
 	progressDialog := getProgressDialog("下载地理信息", "GeoIP Database下载进度：", sw)
 	progressDialog.ConnectCanceled(func() {
@@ -184,6 +192,7 @@ func (sw *SummarizedWidget) downloadGeoIPDatabase(_ bool) {
 	})
 	downloader.ConnectUpdateMax(progressDialog.SetMaximum)
 	downloader.ConnectFailed(func(err error) {
+		progressDialog.Cancel()
 		info := fmt.Sprintf("下载发生错误: %v", err)
 		showErrorDialog(info, sw)
 	})
