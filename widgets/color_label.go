@@ -9,8 +9,6 @@ import (
 var (
 	// 控制颜色的qss模板
 	colorStyle = "QLabel{color:%s;}"
-	// 默认颜色-黑色
-	defaultStyle = "QLabel{color:black;}"
 )
 
 // ColorLabel 使用QSS显示彩色文字
@@ -22,7 +20,7 @@ type ColorLabel struct {
 }
 
 // NewColorLabelWithColor 生成colorlabel，设置default color为color
-// color为空则设置为黑色
+// color为空则设置为系统默认颜色
 // color可以是颜色对应的名字，例如"black", "green"
 // 也可以是16进制的RGB值，例如 #ffffff, #ff08ff, #000000
 func NewColorLabelWithColor(text, color string) *ColorLabel {
@@ -35,11 +33,11 @@ func NewColorLabelWithColor(text, color string) *ColorLabel {
 }
 
 // SetDefaultColor 设置defaultColor
-// color为""时设置为黑色
+// color为""时设置为系统颜色
 // 不会改变现有text内容的颜色
 func (l *ColorLabel) SetDefaultColor(color string) {
 	if color == "" {
-		l.defaultColor = defaultStyle
+		l.defaultColor = color
 		return
 	}
 
@@ -48,7 +46,7 @@ func (l *ColorLabel) SetDefaultColor(color string) {
 
 // ChangeColor 改变现有text的颜色
 // 并且设置defaultColor为新的颜色
-// color为""时设置为defaultStyle
+// color为""时设置为系统默认颜色
 func (l *ColorLabel) ChangeColor(color string) {
 	l.SetDefaultColor(color)
 	text := l.Text()
@@ -56,11 +54,11 @@ func (l *ColorLabel) ChangeColor(color string) {
 }
 
 // SetColorText 用color显示新的text
-// color为""时显示defaultStyle
+// color为""时显示系统默认颜色
 func (l *ColorLabel) SetColorText(text, color string) {
 	var style string
 	if color == "" {
-		style = defaultStyle
+		style = color
 	} else {
 		style = fmt.Sprintf(colorStyle, color)
 	}
